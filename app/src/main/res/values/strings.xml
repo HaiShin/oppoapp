@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">oppoapp</string>
+    <string name="tv_trans">迁移学习</string>
+    <string name="tv_fed">联邦学习</string>
+    <string name="bn_train">训练</string>
+    <string name="bn_test">推理</string>
+    <string name="select_class">类别选择</string>
+    <string name="add_data">添加数据</string>
+    <string name="con_learn">持续学习</string>
+    <string name="model_down">模型下载</string>
+    <string name="model_up">模型上传</string>
+    <string name="class1">类别1:</string>
+    <string name="class2">类别2:</string>
+    <string name="class3">类别3:</string>
+    <string name="class4">类别4:</string>
+    <array name="classname">
+        <item>类别1</item>
+        <item>类别2</item>
+        <item>类别3</item>
+        <item>类别4</item>
+    </array>
+</resources>
