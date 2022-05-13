@@ -5,11 +5,20 @@
       <map>
         <entry key="..\:/oppoapp2/app/src/main/res/drawable/bn_train_test.xml" value="0.2785" />
         <entry key="..\:/oppoapp2/app/src/main/res/drawable/btn_bg_normal.xml" value="0.27" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/btn_bg_normal_fed.xml" value="0.1925" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/btn_nopress_shape.xml" value="0.2305" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/btn_press_selector.xml" value="0.1925" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/btn_press_shape.xml" value="0.2305" />
         <entry key="..\:/oppoapp2/app/src/main/res/drawable/checked_bg.xml" value="0.1365" />
         <entry key="..\:/oppoapp2/app/src/main/res/drawable/checked_text.xml" value="0.2785" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/edit_bg.xml" value="0.1925" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/request_btn_bg.xml" value="0.1925" />
+        <entry key="..\:/oppoapp2/app/src/main/res/drawable/request_load_bg.xml" value="0.1925" />
         <entry key="..\:/oppoapp2/app/src/main/res/drawable/selector_btn_click_textcolor.xml" value="0.27" />
-        <entry key="..\:/oppoapp2/app/src/main/res/layout/activity_main.xml" value="0.4" />
+        <entry key="..\:/oppoapp2/app/src/main/res/layout/activity_fed.xml" value="0.27395833333333336" />
+        <entry key="..\:/oppoapp2/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/oppoapp2/app/src/main/res/layout/bn_train_test.xml" value="0.259375" />
+        <entry key="..\:/oppoapp2/app/src/main/res/layout/request_dialog.xml" value="0.27395833333333336" />
       </map>
     </option>
   </component>

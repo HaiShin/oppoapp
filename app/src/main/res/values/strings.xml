@@ -13,6 +13,7 @@
     <string name="class2">类别2:</string>
     <string name="class3">类别3:</string>
     <string name="class4">类别4:</string>
+    <string name="request">请求连接</string>
     <array name="classname">
         <item>类别1</item>
         <item>类别2</item>

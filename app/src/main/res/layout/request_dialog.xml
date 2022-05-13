@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/request_dialog_view"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/request_load_bg"
+    android:minWidth="200dp"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:layout_marginTop="-125dp"
+    android:padding="10dp"
+    >
+    <EditText
+        android:id="@+id/ip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/edit_bg"
+        android:hint="IP"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:minHeight="45dp"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/port"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/edit_bg"
+        android:hint="PORT"
+
+        android:minHeight="45dp"
+        android:textSize="18sp" />
+    <Button
+        android:id="@+id/btn_rq"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="连接"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/request_btn_bg"
+        />
+
+</LinearLayout>
