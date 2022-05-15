@@ -15,12 +15,14 @@ limitations under the License.
 
 package org.tensorflow.lite.examples.transfer.api;
 
+import org.tensorflow.lite.Interpreter;
+
 import java.io.Closeable;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.tensorflow.lite.Interpreter;
 
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
@@ -103,6 +105,16 @@ public class LiteMultipleSignatureModel implements Closeable {
 
   int getNumBottleneckFeatures() {
     return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape()[1];
+  }
+
+  public void saveModel(String dirPath) {
+    File outputFile = new File(dirPath, "checkpoint.ckpt");
+    System.out.println(dirPath);
+    Map<String, Object> inputs = new HashMap<>();
+    inputs.put("checkpoint_path", outputFile.getAbsolutePath());
+    Map<String, Object> outputs = new HashMap<>();
+    this.interpreter.runSignature(inputs, outputs, "save");
+    System.out.println("checkpoint文件保存完成！");
   }
 
   @Override

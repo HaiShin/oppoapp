@@ -267,6 +267,10 @@ public final class TransferLearningModel implements Closeable {
         model.getExpectedBatchSize());
   }
 
+  public void saveModel(String dirPath) {
+    this.model.saveModel(dirPath);
+  }
+
   /**
    * Constructs an iterator that iterates over training sample batches.
    *

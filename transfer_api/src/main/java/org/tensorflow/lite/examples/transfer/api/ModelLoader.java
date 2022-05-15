@@ -18,6 +18,9 @@ package org.tensorflow.lite.examples.transfer.api;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+
+import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
@@ -29,7 +32,7 @@ import java.nio.channels.FileChannel.MapMode;
  */
 public class ModelLoader {
 
-  private AssetManager assetManager;
+  private String parentDir;
   private String directoryName;
 
   /**
@@ -37,18 +40,21 @@ public class ModelLoader {
    *
    * @param directoryName path to model directory in assets tree.
    */
-  public ModelLoader(Context context, String directoryName) {
+  public ModelLoader(String parentDir, String directoryName) {
     this.directoryName = directoryName;
-    this.assetManager = context.getAssets();
+    this.parentDir = parentDir;
   }
 
   protected MappedByteBuffer loadMappedFile(String filePath) throws IOException {
-    AssetFileDescriptor fileDescriptor = assetManager.openFd(this.directoryName + "/" + filePath);
-
-    FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
+//      fileDescriptor = assetManager.openFd(this.directoryName + "/" + filePath);
+//    FileDescriptor fileDescriptor = new FileDescriptor();
+    File file  = new File(this.parentDir + "/" + this.directoryName + "/" + filePath);
+    if (!file.exists()){
+      throw new IOException("the file not is exit!");
+    }
+    System.out.println("giaogiaogiao");
+    FileInputStream inputStream = new FileInputStream(file);
     FileChannel fileChannel = inputStream.getChannel();
-    long startOffset = fileDescriptor.getStartOffset();
-    long declaredLength = fileDescriptor.getDeclaredLength();
-    return fileChannel.map(MapMode.READ_ONLY, startOffset, declaredLength);
+    return fileChannel.map(MapMode.READ_ONLY, 0, file.length());
   }
 }

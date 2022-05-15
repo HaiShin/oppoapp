@@ -2,7 +2,10 @@ package com.example.oppoapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -12,9 +15,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.PrimitiveIterator;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private GlobalApp globalApp;
+    private String network_name = "model";
+    private String network_file_name = network_name+".tflite";
+
+
     private TextView tv_trans;
     private TextView tv_fed;
     private Button bn_train;
@@ -32,6 +41,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
+        if (new File(modelFilePath).exists()) {
+            globalApp = ((GlobalApp) getApplicationContext());
+            String parentDir = getCacheDir().getAbsolutePath();
+            try {
+                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir));
+            } catch (Exception e) {
+                throw new RuntimeException("加载模型报错！",e);
+            }
+        } else {
+            Toast.makeText(this,"模型文件不存在，请点击模型下载按钮",Toast.LENGTH_SHORT).show();
+        }
+
         tv_trans = (TextView) findViewById(R.id.tv_trans);
         tv_fed = (TextView) findViewById(R.id.tv_fed);
         bn_train = findViewById(R.id.bn_train);
@@ -109,6 +132,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
 
+        }
+    }
+
+
+    // check had permission
+    private boolean hasPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
+
+    // request permission
+    private void requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
     }
 }
