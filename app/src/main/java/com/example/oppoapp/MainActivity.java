@@ -20,7 +20,7 @@ import java.util.PrimitiveIterator;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private GlobalApp globalApp;
-    private String network_name = "model";
+    private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
 
 
