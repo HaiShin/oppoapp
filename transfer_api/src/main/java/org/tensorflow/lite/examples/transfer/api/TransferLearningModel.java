@@ -60,10 +60,10 @@ public final class TransferLearningModel implements Closeable {
   }
 
   private static class TrainingSample {
-    float[] bottleneck;
+    float[][][] bottleneck;
     float[] label;
 
-    TrainingSample(float[] bottleneck, float[] label) {
+    TrainingSample(float[][][] bottleneck, float[] label) {
       this.bottleneck = bottleneck;
       this.label = label;
     }
@@ -90,7 +90,7 @@ public final class TransferLearningModel implements Closeable {
   private final List<TrainingSample> trainingSamples = new ArrayList<>();
 
   // Where to store training inputs.
-  private float[][] trainingBatchBottlenecks;
+  private float[][][][] trainingBatchBottlenecks;
   private float[][] trainingBatchLabels;
 
   // Used to spawn background threads.
@@ -121,7 +121,7 @@ public final class TransferLearningModel implements Closeable {
     for (int classIdx = 0; classIdx < classes.size(); classIdx++) {
       String className = classesByIdx[classIdx];
       this.classes.put(className, classIdx);
-      oneHotEncodedClass.put(className, oneHotEncoding(classIdx));
+      oneHotEncodedClass.put(className, oneHotEncoding(classIdx, classes.size()));
     }
   }
 
@@ -150,8 +150,10 @@ public final class TransferLearningModel implements Closeable {
 
           trainingInferenceLock.lockInterruptibly();
           try {
-            float[] bottleneck = model.loadBottleneck(image);
+            float[][][] bottleneck = model.loadBottleneck(image);
             trainingSamples.add(new TrainingSample(bottleneck, oneHotEncodedClass.get(className)));
+          } catch (Exception e) {
+            e.printStackTrace();
           } finally {
             trainingInferenceLock.unlock();
           }
@@ -177,8 +179,8 @@ public final class TransferLearningModel implements Closeable {
               "Too few samples to start training: need %d, got %d",
               trainBatchSize, trainingSamples.size()));
     }
-
-    trainingBatchBottlenecks = new float[trainBatchSize][numBottleneckFeatures()];
+    int[] features = numBottleneckFeatures();
+    trainingBatchBottlenecks = new float[trainBatchSize][features[1]][features[2]][features[3]];
     trainingBatchLabels = new float[trainBatchSize][this.classes.size()];
 
     return executor.submit(
@@ -254,8 +256,8 @@ public final class TransferLearningModel implements Closeable {
     }
   }
 
-  private float[] oneHotEncoding(int classIdx) {
-    float[] oneHot = new float[4];
+  private float[] oneHotEncoding(int classIdx, int class_size) {
+    float[] oneHot = new float[class_size];
     oneHot[classIdx] = 1;
     return oneHot;
   }
@@ -310,7 +312,7 @@ public final class TransferLearningModel implements Closeable {
         };
   }
 
-  private int numBottleneckFeatures() {
+  private int[] numBottleneckFeatures() {
     return model.getNumBottleneckFeatures();
   }
 

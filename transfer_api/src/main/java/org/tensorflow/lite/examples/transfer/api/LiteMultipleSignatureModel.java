@@ -50,11 +50,11 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param image 3-D float array of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array containing bottleneck features
    */
-  float[] loadBottleneck(float[][][] image) {
+  float[][][] loadBottleneck(float[][][] image) {
     Map<String, Object> inputs = new HashMap<>();
     inputs.put("feature", new float[][][][] {image});
     Map<String, Object> outputs = new HashMap<>();
-    float[][] bottleneck = new float[1][BOTTLENECK_SIZE];
+    float[][][][] bottleneck = new float[1][7][7][1280];
     outputs.put("bottleneck", bottleneck);
     this.interpreter.runSignature(inputs, outputs, "load");
     return bottleneck[0];
@@ -67,7 +67,7 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param labels 2-D float array of label batches of size (BATCH_SIZE, NUM_CLASSES)
    * @return the training loss
    */
-  float runTraining(float[][] bottlenecks, float[][] labels) {
+  float runTraining(float[][][][] bottlenecks, float[][] labels) {
     Map<String, Object> inputs = new HashMap<>();
     inputs.put("bottleneck", bottlenecks);
     inputs.put("label", labels);
@@ -103,8 +103,8 @@ public class LiteMultipleSignatureModel implements Closeable {
     return EXPECTED_BATCH_SIZE;
   }
 
-  int getNumBottleneckFeatures() {
-    return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape()[1];
+  int[] getNumBottleneckFeatures() {
+    return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape();
   }
 
   public void saveModel(String dirPath) {

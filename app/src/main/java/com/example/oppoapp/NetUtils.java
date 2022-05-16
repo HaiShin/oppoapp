@@ -5,6 +5,8 @@ import android.os.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,7 +14,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -37,7 +42,9 @@ public class NetUtils {
     private static final String DEVICE_NAME = "giao";
     private String token;
 
-    public void doRegister(String url) throws JSONException {
+    private static int BUFFER = 1024;
+
+    public void doRegister() throws JSONException {
         OkHttpClient okHttpClient = new OkHttpClient();
         // 先封装一个 JSON 对象
         JSONObject param = new JSONObject();
@@ -49,7 +56,7 @@ public class NetUtils {
         RequestBody requestBody = RequestBody.create(JSON, params);
         //创建一个请求对象
         Request request = new Request.Builder()
-                .url(url)
+                .url(REGISTER_URL)
                 .post(requestBody)
                 .build();
         //发送请求获取响应
@@ -66,7 +73,7 @@ public class NetUtils {
                     token = data.getString("token");
                     System.out.println("服务器连接成功"); //消息发送的内容如：  Object String 类 int
                 } else if (code == 201) { //已注册，则通过连接去返回token
-                    doConnect(CONNECT_URL);
+                    doConnect();
                 } else {
                     System.out.println("设备注册失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
                 }
@@ -78,7 +85,7 @@ public class NetUtils {
         }
     }
 
-    public void doConnect(String url) throws IOException, JSONException {
+    public void doConnect() throws IOException, JSONException {
         OkHttpClient okHttpClient = new OkHttpClient();
         // 先封装一个 JSON 对象
         JSONObject param = new JSONObject();
@@ -88,7 +95,7 @@ public class NetUtils {
         RequestBody requestBody = RequestBody.create(JSON, params);
         //创建一个请求对象
         Request request = new Request.Builder()
-                .url(url)
+                .url(CONNECT_URL)
                 .post(requestBody)
                 .build();
         //发送请求获取响应
@@ -167,17 +174,20 @@ public class NetUtils {
         return result;
     }
 
-    private void download(String downloadUrl, String filePath) throws IOException {
-        ResponseBody response = getResponeBody(downloadUrl);
+    public void download(String cachePath) throws IOException {
+        ResponseBody response = getResponeBody(DOWNLOAD_URL);
         if (response == null ) {
             return;
         }
         InputStream inputStream = response.byteStream();
-//        String filePath = getCacheDir().getAbsolutePath() + "/" + network_file_name;
+        String dirPath = cachePath + "/model/";
+
+        if (!new File(dirPath).exists()) {
+            new File(dirPath).mkdir();
+        }
+        String filePath = dirPath + network_file_name;
 
         boolean result = WriteFile4InputStream(filePath, inputStream);
-        Message msg = new Message();
-        msg.what = 1;  //消息发送的标志
 
         if (result) {
             System.out.println("模型下载成功");
@@ -274,4 +284,83 @@ public class NetUtils {
         }
         return contentType;
     }
+
+    public boolean getData(String filePath,String dataUrl) {
+
+        ResponseBody response =null;
+        OkHttpClient okHttpClient = new OkHttpClient()
+                .newBuilder()
+                .connectTimeout(60000, TimeUnit.MILLISECONDS)
+                .readTimeout(60000, TimeUnit.MILLISECONDS)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(dataUrl)
+                .build();
+        Call call = okHttpClient.newCall(request);
+        try {
+            response = call.execute().body();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (response == null ) {
+            return false;
+        }
+        InputStream inputStream = response.byteStream();
+        boolean result = WriteFile4InputStream(filePath + "/rps.zip", inputStream);
+        if (result) {
+            System.out.println("数据下载成功");
+            unzip(filePath+"/rps.zip",filePath + "/");
+            System.out.println("解压数据完成");
+        }else {
+            System.out.println("数据下载失败");
+        }
+        return true;
+    }
+
+    public static String unzip(String filePath,String zipDir) {
+        String name = "";
+        try {
+            BufferedOutputStream dest = null;
+            BufferedInputStream is = null;
+            ZipEntry entry;
+            ZipFile zipfile = new ZipFile(filePath);
+
+            Enumeration dir = zipfile.entries();
+            while (dir.hasMoreElements()){
+                entry = (ZipEntry) dir.nextElement();
+
+                if( entry.isDirectory()){
+                    name = entry.getName();
+                    name = name.substring(0, name.length() - 1);
+                    File fileObject = new File(zipDir + name);
+                    fileObject.mkdir();
+                }
+            }
+
+            Enumeration e = zipfile.entries();
+            while (e.hasMoreElements()) {
+                entry = (ZipEntry) e.nextElement();
+                if( entry.isDirectory()){
+                    continue;
+                }else{
+                    is = new BufferedInputStream(zipfile.getInputStream(entry));
+                    int count;
+                    byte[] dataByte = new byte[BUFFER];
+                    FileOutputStream fos = new FileOutputStream(zipDir+entry.getName());
+                    dest = new BufferedOutputStream(fos, BUFFER);
+                    while ((count = is.read(dataByte, 0, BUFFER)) != -1) {
+                        dest.write(dataByte, 0, count);
+                    }
+                    dest.flush();
+                    dest.close();
+                    is.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return  name;
+    }
+
 }
