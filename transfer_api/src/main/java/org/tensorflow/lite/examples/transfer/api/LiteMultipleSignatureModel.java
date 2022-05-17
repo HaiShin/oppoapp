@@ -104,7 +104,7 @@ public class LiteMultipleSignatureModel implements Closeable {
   float[] runInference(float[][][] testImage) {
     // Run the inference.
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("feature", new float[][][][] {testImage});
+    inputs.put("x", new float[][][][] {testImage});
 
     Map<String, Object> outputs = new HashMap<>();
     float[][] output = new float[1][numClasses];
