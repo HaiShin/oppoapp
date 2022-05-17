@@ -118,6 +118,7 @@
         app:layout_constraintStart_toEndOf="@+id/Loss_tx"
         app:layout_constraintTop_toBottomOf="@+id/epoch"
         app:layout_constraintVertical_bias="0.0" />
+
     <TextView
         android:id="@+id/Acc_tx"
         android:layout_width="wrap_content"

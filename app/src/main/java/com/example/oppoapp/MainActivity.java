@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tv_fed;
     private TextView tv_epoch;
     private TextView tv_loss;
+    private TextView tv_acc;
     private Button bn_train;
     private Button bn_test;
     private Button add_data;
@@ -70,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_fed = (TextView) findViewById(R.id.tv_fed);
         tv_epoch = findViewById(R.id.epoch);
         tv_loss = findViewById(R.id.loss);
+        tv_acc = findViewById(R.id.Acc);
+
 
         bn_train = findViewById(R.id.bn_train);
         bn_test = findViewById(R.id.bn_test);
@@ -126,7 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_test:
                 //点击推理按钮
-                Toast.makeText(this,"点击了推理按钮",Toast.LENGTH_SHORT).show();
+                Intent inferIntent = new Intent(MainActivity.this, CameraActivity.class);
+                startActivity(inferIntent);
                 break;
             case R.id.add_data:
                 //添加数据
@@ -264,6 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     tv_loss.setText(loss + "");
                     }, (acc) -> {
             System.out.println( "test------" + acc);
+            tv_acc.setText(acc + "");
         });
     }
 }

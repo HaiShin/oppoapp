@@ -103,7 +103,7 @@ public final class TransferLearningModel implements Closeable {
   //存储所有的数据
   private float[][][][] testBatchImages;
   private float[][] testBatchLabels;
-  private DecimalFormat dataFormat = new DecimalFormat( "0.0000");
+  private DecimalFormat dataFormat = new DecimalFormat( "0.000");
 
 
   // Used to spawn background threads.
