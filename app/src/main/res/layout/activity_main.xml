@@ -118,124 +118,160 @@
         app:layout_constraintStart_toEndOf="@+id/Loss_tx"
         app:layout_constraintTop_toBottomOf="@+id/epoch"
         app:layout_constraintVertical_bias="0.0" />
-
     <TextView
-        android:id="@+id/tx1"
-        android:layout_width="60dp"
+        android:id="@+id/Acc_tx"
+        android:layout_width="wrap_content"
         android:layout_height="30dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class1"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide2"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class1"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ll1"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <TextView
-        android:id="@+id/tx_class1"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="361dp"
+        android:text="Accuracy："
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guide2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ll1"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Loss_tx"
         app:layout_constraintVertical_bias="0.0" />
 
+
     <TextView
-        android:id="@+id/tx2"
-        android:layout_width="60dp"
+        android:id="@+id/Acc"
+        android:layout_width="50dp"
         android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class2"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         android:textAlignment="center"
-        android:textColor="@color/little_gray"
+        android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/guide2"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/Acc_tx"
+        app:layout_constraintTop_toBottomOf="@+id/loss"
         app:layout_constraintVertical_bias="0.0" />
 
-    <TextView
-        android:id="@+id/tx_class2"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
-        android:textAlignment="center"
-        android:textColor="@color/gray"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx_class1" />
 
-    <TextView
-        android:id="@+id/tx3"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class3"
-        android:textAlignment="center"
-        android:textColor="@color/little_gray"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide2"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class3"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx2"
-        app:layout_constraintVertical_bias="0.0" />
 
-    <TextView
-        android:id="@+id/tx_class3"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
-        android:textAlignment="center"
-        android:textColor="@color/gray"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx_class2" />
+<!--    <TextView-->
+<!--        android:id="@+id/tx1"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="15dp"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:text="@string/class1"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guide2"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/tx_class1"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/ll1"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
 
-    <TextView
-        android:id="@+id/tx4"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class4"
-        android:textAlignment="center"
-        android:textColor="@color/little_gray"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide2"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class4"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx3"
-        app:layout_constraintVertical_bias="0.0" />
+<!--    <TextView-->
+<!--        android:id="@+id/tx_class1"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="15dp"-->
+<!--        android:layout_marginEnd="15dp"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/black"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guide2"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/ll1"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
 
-    <TextView
-        android:id="@+id/tx_class4"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
-        android:textAlignment="center"
-        android:textColor="@color/gray"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx_class3" />
+<!--    <TextView-->
+<!--        android:id="@+id/tx2"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:text="@string/class2"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/little_gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guide2"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/tx_class2"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx1"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tx_class2"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="15dp"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx_class1" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tx3"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:text="@string/class3"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/little_gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guide2"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/tx_class3"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx2"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tx_class3"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="15dp"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx_class2" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tx4"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="10dp"-->
+<!--        android:text="@string/class4"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/little_gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guide2"-->
+<!--        app:layout_constraintEnd_toStartOf="@+id/tx_class4"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx3"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
+
+<!--    <TextView-->
+<!--        android:id="@+id/tx_class4"-->
+<!--        android:layout_width="60dp"-->
+<!--        android:layout_height="30dp"-->
+<!--        android:layout_marginTop="5dp"-->
+<!--        android:layout_marginEnd="15dp"-->
+<!--        android:textAlignment="center"-->
+<!--        android:textColor="@color/gray"-->
+<!--        android:textSize="18sp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/tx_class3" />-->
     <View
         android:id="@+id/guide2"
         android:layout_width="match_parent"
