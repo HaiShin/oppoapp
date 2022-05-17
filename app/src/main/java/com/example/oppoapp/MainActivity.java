@@ -3,10 +3,13 @@ package com.example.oppoapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -256,6 +259,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         globalApp.getTlModel().setEpochs(20);
         globalApp.getTlModel().enableTraining((epoch, loss) -> {
                     System.out.println("epoch: "+epoch + " ----- loss:" + loss);
+
+                    tv_epoch.setText(epoch + "");
+                    tv_loss.setText(loss + "");
                     }, (acc) -> {
             System.out.println( "test------" + acc);
         });

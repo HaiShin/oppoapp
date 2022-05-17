@@ -81,12 +81,13 @@ public class LiteMultipleSignatureModel implements Closeable {
     return loss.get(0);
   }
 
-  float runTest(float[][][][] bottlenecks, float[][] labels) {
+  float runTest(float[][][][] feature, float[][] labels) {
     Map<String, Object> inputs = new HashMap<>();
-    inputs.put("bottleneck", bottlenecks);
-    inputs.put("label", labels);
+    inputs.put("x", feature);
+    inputs.put("y", labels);
 
     Map<String, Object> outputs = new HashMap<>();
+//    float accuracy = 0;
     FloatBuffer accuracy = FloatBuffer.allocate(1);
     outputs.put("accuracy", accuracy);
 
@@ -121,6 +122,9 @@ public class LiteMultipleSignatureModel implements Closeable {
   int[] getNumBottleneckFeatures() {
     return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape();
   }
+  public int[] getNumImagesFeatures() {
+    return this.interpreter.getInputTensorFromSignature("x", "test").shape();
+  }
 
   public void saveModel(String dirPath) {
     File outputFile = new File(dirPath, "checkpoint.ckpt");
@@ -136,4 +140,6 @@ public class LiteMultipleSignatureModel implements Closeable {
   public void close() {
     this.interpreter.close();
   }
+
+
 }

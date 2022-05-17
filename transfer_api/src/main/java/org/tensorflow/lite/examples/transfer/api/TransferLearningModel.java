@@ -18,6 +18,7 @@ package org.tensorflow.lite.examples.transfer.api;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -93,10 +94,17 @@ public final class TransferLearningModel implements Closeable {
   private LiteMultipleSignatureModel model;
 
   private final List<TrainingSample> trainingSamples = new ArrayList<>();
+  //未被处理的原图片
+  private final List<TrainingSample> trainingImages = new ArrayList<>();
 
   // Where to store training inputs.
   private float[][][][] trainingBatchBottlenecks;
   private float[][] trainingBatchLabels;
+  //存储所有的数据
+  private float[][][][] testBatchImages;
+  private float[][] testBatchLabels;
+  private DecimalFormat dataFormat = new DecimalFormat( "0.0000");
+
 
   // Used to spawn background threads.
   private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
@@ -155,6 +163,7 @@ public final class TransferLearningModel implements Closeable {
 
           trainingInferenceLock.lockInterruptibly();
           try {
+            trainingImages.add(new TrainingSample(image, oneHotEncodedClass.get(className)));
             float[][][] bottleneck = model.loadBottleneck(image);
             trainingSamples.add(new TrainingSample(bottleneck, oneHotEncodedClass.get(className)));
           } catch (Exception e) {
@@ -214,6 +223,7 @@ public final class TransferLearningModel implements Closeable {
               }
 
               float avgLoss = totalLoss / numBatchesProcessed;
+              avgLoss = Float.parseFloat(dataFormat.format(avgLoss));
               if (lossConsumer != null) {
                 lossConsumer.onLoss(epoch, avgLoss);
               }
@@ -229,41 +239,41 @@ public final class TransferLearningModel implements Closeable {
 
   public void test(AccConsumer accConsumer) {
     checkNotTerminating();
+    trainingInferenceLock.lock();
     int testBatchSize = (int) (getTrainBatchSize() * 0.2);
 
-    if (trainingSamples.size() < testBatchSize) {
+    if (trainingImages.size() < testBatchSize) {
       throw new RuntimeException(
               String.format(
                       "Too few samples to start training: need %d, got %d",
-                      testBatchSize, trainingSamples.size()));
+                      testBatchSize, trainingImages.size()));
     }
-    int[] features = numBottleneckFeatures();
-    trainingBatchBottlenecks = new float[testBatchSize][features[1]][features[2]][features[3]];
-    trainingBatchLabels = new float[testBatchSize][this.classes.size()];
-    float totalAcc = 0;
+    int[] features = numImagesFeatures();
+    testBatchImages = new float[testBatchSize][features[1]][features[2]][features[3]];
+    testBatchLabels = new float[testBatchSize][this.classes.size()];
+    float totalAcc = 0.000f;
+
     int numBatchesProcessed = 0;
 
     for (List<TrainingSample> batch : testBatches(testBatchSize)) {
-//                if (Thread.interrupted()) {
-//                  break epochLoop;
-//                }
 
       for (int sampleIdx = 0; sampleIdx < batch.size(); sampleIdx++) {
         TrainingSample sample = batch.get(sampleIdx);
-        trainingBatchBottlenecks[sampleIdx] = sample.bottleneck;
-        trainingBatchLabels[sampleIdx] = sample.label;
+        testBatchImages[sampleIdx] = sample.bottleneck;
+        testBatchLabels[sampleIdx] = sample.label;
       }
 
-      float acc = this.model.runTest(trainingBatchBottlenecks, trainingBatchLabels);
+      float acc = this.model.runTest(testBatchImages, testBatchLabels);
+
       totalAcc += acc;
       numBatchesProcessed++;
     }
 
     float avgAcc = totalAcc / numBatchesProcessed;
+    avgAcc = Float.parseFloat(dataFormat.format(avgAcc));
     if (accConsumer != null) {
       accConsumer.onAcc(avgAcc);
     }
-
   }
 
   /**
@@ -362,8 +372,8 @@ public final class TransferLearningModel implements Closeable {
       throw new RuntimeException("Thread calling trainingBatches() must hold the training lock");
     }
     trainingInferenceLock.unlock();
-    Collections.shuffle(trainingSamples);
-    List testSamples = trainingSamples.subList(0, (int)(trainingSamples.size() * 0.2));
+    Collections.shuffle(trainingImages);
+    List testSamples = trainingImages.subList(0, (int)(trainingImages.size() * 0.2));
     return () ->
             new Iterator<List<TrainingSample>>() {
               private int nextIndex = 0;
@@ -392,6 +402,10 @@ public final class TransferLearningModel implements Closeable {
 
   private int[] numBottleneckFeatures() {
     return model.getNumBottleneckFeatures();
+  }
+
+  private int[] numImagesFeatures() {
+    return model.getNumImagesFeatures();
   }
 
   private void checkNotTerminating() {
