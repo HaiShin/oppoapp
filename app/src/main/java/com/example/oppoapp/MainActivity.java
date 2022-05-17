@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
+        System.out.println(modelFilePath);
         loadModel(modelFilePath);
 
 
@@ -252,9 +253,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void train(){
-        globalApp.getTlModel().setEpochs(5);
+        globalApp.getTlModel().setEpochs(20);
         globalApp.getTlModel().enableTraining((epoch, loss) -> {
-            System.out.println(epoch + " ----- " + loss);
+                    System.out.println("epoch: "+epoch + " ----- loss:" + loss);
+                    }, (acc) -> {
+            System.out.println( "test------" + acc);
         });
     }
 }

@@ -23,6 +23,7 @@ import android.os.ConditionVariable;
 import org.tensorflow.lite.examples.transfer.api.ModelLoader;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.LossConsumer;
+import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.AccConsumer;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.Prediction;
 
 import java.io.Closeable;
@@ -51,6 +52,7 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
 
   private final ConditionVariable shouldTrain = new ConditionVariable();
   private volatile LossConsumer lossConsumer;
+  private volatile AccConsumer accConsumer;
   private Utils imageUtils = new Utils();
 
   TransferLearningModelWrapper(String parentDir, List<String> list) {
@@ -60,16 +62,16 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
             new ModelLoader(parentDir, "model"), list);
 
     new Thread(() -> {
-      while (!Thread.interrupted()) {
+//      while (!Thread.interrupted()) {
         shouldTrain.block();
         try {
-          model.train(epochs, lossConsumer).get();
+          model.train(epochs, lossConsumer, accConsumer).get();
         } catch (ExecutionException e) {
           throw new RuntimeException("Exception occurred during model training", e.getCause());
         } catch (InterruptedException e) {
           // no-op
         }
-      }
+//      }
     }).start();
   }
 
@@ -111,8 +113,9 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
    *
    * @param lossConsumer callback that the loss values will be passed to.
    */
-  public void enableTraining(LossConsumer lossConsumer) {
+  public void enableTraining(LossConsumer lossConsumer,AccConsumer accConsumer) {
     this.lossConsumer = lossConsumer;
+    this.accConsumer = accConsumer;
     shouldTrain.open();
   }
 

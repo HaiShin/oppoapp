@@ -81,6 +81,19 @@ public class LiteMultipleSignatureModel implements Closeable {
     return loss.get(0);
   }
 
+  float runTest(float[][][][] bottlenecks, float[][] labels) {
+    Map<String, Object> inputs = new HashMap<>();
+    inputs.put("bottleneck", bottlenecks);
+    inputs.put("label", labels);
+
+    Map<String, Object> outputs = new HashMap<>();
+    FloatBuffer accuracy = FloatBuffer.allocate(1);
+    outputs.put("accuracy", accuracy);
+
+    this.interpreter.runSignature(inputs, outputs, "test");
+    return accuracy.get(0);
+  }
+
   /**
    * Invokes inference on the given image batches.
    *
@@ -98,6 +111,8 @@ public class LiteMultipleSignatureModel implements Closeable {
     this.interpreter.runSignature(inputs, outputs, "infer");
     return output[0];
   }
+
+
 
   int getExpectedBatchSize() {
     return EXPECTED_BATCH_SIZE;
