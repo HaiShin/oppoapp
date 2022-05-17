@@ -15,12 +15,14 @@ limitations under the License.
 
 package org.tensorflow.lite.examples.transfer.api;
 
+import org.tensorflow.lite.Interpreter;
+
 import java.io.Closeable;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import org.tensorflow.lite.Interpreter;
 
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
@@ -48,11 +50,11 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param image 3-D float array of size (IMG_SIZE, IMG_SIZE, 3)
    * @return 1-D float array containing bottleneck features
    */
-  float[] loadBottleneck(float[][][] image) {
+  float[][][] loadBottleneck(float[][][] image) {
     Map<String, Object> inputs = new HashMap<>();
     inputs.put("feature", new float[][][][] {image});
     Map<String, Object> outputs = new HashMap<>();
-    float[][] bottleneck = new float[1][BOTTLENECK_SIZE];
+    float[][][][] bottleneck = new float[1][7][7][1280];
     outputs.put("bottleneck", bottleneck);
     this.interpreter.runSignature(inputs, outputs, "load");
     return bottleneck[0];
@@ -65,7 +67,7 @@ public class LiteMultipleSignatureModel implements Closeable {
    * @param labels 2-D float array of label batches of size (BATCH_SIZE, NUM_CLASSES)
    * @return the training loss
    */
-  float runTraining(float[][] bottlenecks, float[][] labels) {
+  float runTraining(float[][][][] bottlenecks, float[][] labels) {
     Map<String, Object> inputs = new HashMap<>();
     inputs.put("bottleneck", bottlenecks);
     inputs.put("label", labels);
@@ -77,6 +79,20 @@ public class LiteMultipleSignatureModel implements Closeable {
     this.interpreter.runSignature(inputs, outputs, "train");
 
     return loss.get(0);
+  }
+
+  float runTest(float[][][][] feature, float[][] labels) {
+    Map<String, Object> inputs = new HashMap<>();
+    inputs.put("x", feature);
+    inputs.put("y", labels);
+
+    Map<String, Object> outputs = new HashMap<>();
+//    float accuracy = 0;
+    FloatBuffer accuracy = FloatBuffer.allocate(1);
+    outputs.put("accuracy", accuracy);
+
+    this.interpreter.runSignature(inputs, outputs, "test");
+    return accuracy.get(0);
   }
 
   /**
@@ -97,16 +113,33 @@ public class LiteMultipleSignatureModel implements Closeable {
     return output[0];
   }
 
+
+
   int getExpectedBatchSize() {
     return EXPECTED_BATCH_SIZE;
   }
 
-  int getNumBottleneckFeatures() {
-    return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape()[1];
+  int[] getNumBottleneckFeatures() {
+    return this.interpreter.getInputTensorFromSignature("bottleneck", "train").shape();
+  }
+  public int[] getNumImagesFeatures() {
+    return this.interpreter.getInputTensorFromSignature("x", "test").shape();
+  }
+
+  public void saveModel(String dirPath) {
+    File outputFile = new File(dirPath, "checkpoint.ckpt");
+    System.out.println(dirPath);
+    Map<String, Object> inputs = new HashMap<>();
+    inputs.put("checkpoint_path", outputFile.getAbsolutePath());
+    Map<String, Object> outputs = new HashMap<>();
+    this.interpreter.runSignature(inputs, outputs, "save");
+    System.out.println("checkpoint文件保存完成！");
   }
 
   @Override
   public void close() {
     this.interpreter.close();
   }
+
+
 }

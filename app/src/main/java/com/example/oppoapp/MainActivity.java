@@ -2,8 +2,14 @@ package com.example.oppoapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -12,11 +18,27 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.PrimitiveIterator;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private GlobalApp globalApp;
+    private NetUtils netUtils = new NetUtils();
+    private String network_name = "model";
+    private String network_file_name = network_name+".tflite";
+
+
     private TextView tv_trans;
     private TextView tv_fed;
+    private TextView tv_epoch;
+    private TextView tv_loss;
     private Button bn_train;
     private Button bn_test;
     private Button add_data;
@@ -31,9 +53,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //获取相册
         setContentView(R.layout.activity_main);
+        if (!hasPermission()) {
+            requestPermission();
+        }
+
+        setContentView(R.layout.activity_main);
+
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
+        System.out.println(modelFilePath);
+        loadModel(modelFilePath);
+
+
         tv_trans = (TextView) findViewById(R.id.tv_trans);
         tv_fed = (TextView) findViewById(R.id.tv_fed);
+        tv_epoch = findViewById(R.id.epoch);
+        tv_loss = findViewById(R.id.loss);
+
         bn_train = findViewById(R.id.bn_train);
         bn_test = findViewById(R.id.bn_test);
         bn_con = findViewById(R.id.bn_con);
@@ -85,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_train:
                 //点击训练按钮,在这添加后续操作
-                Toast.makeText(this,"点击了训练按钮",Toast.LENGTH_SHORT).show();
+                train();
                 break;
             case R.id.bn_test:
                 //点击推理按钮
@@ -93,6 +130,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.add_data:
                 //添加数据
+                try {
+                    getData();
+                } catch (FileNotFoundException | InterruptedException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.bn_trans:
                 //迁移学习
@@ -102,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.model_down:
                 //模型下载
+                downModel();
                 break;
             case R.id.model_up:
                 //模型上传
@@ -110,5 +153,117 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
         }
+    }
+
+
+    // check had permission
+    private boolean hasPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
+
+    // request permission
+    private void requestPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(new String[]{Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
+    }
+
+    private void getData() throws FileNotFoundException, InterruptedException {
+        String dataPath = getCacheDir().getAbsolutePath() + "/rps";
+        if (!new File(dataPath).exists()){
+            new File(dataPath).mkdir();
+        }
+        String downDataUrl = "http://112.124.109.236/rps_64.zip";
+        Thread thread = new Thread(() -> {
+//                netUtils.getData(dataPath, downDataUrl);
+            try {
+                globalApp.getTlModel().addBatchSample(dataPath + "/rps_64");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+        thread.join();
+//        Toast.makeText(this,"数据下载完成",Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this,"开始加载数据",Toast.LENGTH_SHORT).show();
+//        Thread thread2 = new Thread(() -> {
+//            try {
+//
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        thread2.start();
+//        thread2.join();
+        Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
+    }
+
+    private void downModel() {
+        String cachePath = getCacheDir().getAbsolutePath();
+
+        new Thread(){
+            @Override
+            public void run() {
+                try {
+                    netUtils.doRegister();
+                    netUtils.doConnect();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+        new Thread(){
+            @Override
+            public void run() {
+                try {
+                    netUtils.download(cachePath);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
+
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
+        loadModel(modelFilePath);
+
+    }
+
+    private void loadModel(String modelFilePath){
+        if (new File(modelFilePath).exists()) {
+            globalApp = ((GlobalApp) getApplicationContext());
+            String parentDir = getCacheDir().getAbsolutePath();
+            List<String> list = Arrays.asList("paper","rock","scissors");
+            try {
+                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir, list));
+            } catch (Exception e) {
+                throw new RuntimeException("加载模型报错！",e);
+            }
+        } else {
+            Toast.makeText(this,"模型文件不存在，请点击模型下载按钮",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void train(){
+        globalApp.getTlModel().setEpochs(20);
+        globalApp.getTlModel().enableTraining((epoch, loss) -> {
+                    System.out.println("epoch: "+epoch + " ----- loss:" + loss);
+
+                    tv_epoch.setText(epoch + "");
+                    tv_loss.setText(loss + "");
+                    }, (acc) -> {
+            System.out.println( "test------" + acc);
+        });
     }
 }
