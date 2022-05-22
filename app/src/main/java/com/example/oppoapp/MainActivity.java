@@ -148,7 +148,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.model_down:
                 //模型下载
-                downModel();
+                try {
+                    downModel();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.model_up:
                 //模型上传
@@ -210,37 +214,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
     }
 
-    private void downModel() {
+    private void downModel() throws InterruptedException {
         String cachePath = getCacheDir().getAbsolutePath();
 
-        new Thread(){
-            @Override
-            public void run() {
-                try {
-                    netUtils.doRegister();
-                    netUtils.doConnect();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        Thread thread = new Thread(() -> {
+            try {
+                netUtils.doRegister();
+                netUtils.doConnect();
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
             }
-        }.start();
+        });
+        thread.start();
+        thread.join();
 
-        new Thread(){
-            @Override
-            public void run() {
-                try {
-                    netUtils.download(cachePath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        Thread thread2 = new Thread(() -> {
+            try {
+                netUtils.download(cachePath);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }.start();
+        });
+        thread2.start();
+        thread2.join();
+        Toast.makeText(this,"模型下载成功",Toast.LENGTH_SHORT).show();
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
-        loadModel(modelFilePath);
+//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download" + "/" + network_file_name;
+//        loadModel(modelFilePath);
 
     }
 

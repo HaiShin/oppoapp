@@ -33,13 +33,14 @@ public class NetUtils {
     private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
     private String network_version = "v1.0";
-    private final static String URL = "http://106.15.39.182:8080";
-    private final static String REGISTER_URL = URL + "/device/register";
-    private static final String CONNECT_URL = URL + "/device/connect";
-    private static final String DOWNLOAD_URL = URL + "/network/download";
-    private static final String UPLOAD_URL = URL + "/network/upload";
-    private static final String DEVICE_NUMBER = "1233211234567";
-    private static final String DEVICE_NAME = "giao";
+    private String URL = "http://106.15.39.182:8080";
+    private String REGISTER_URL = URL + "/device/register";
+    private String CONNECT_URL = URL + "/device/connect";
+    private String DOWNLOAD_URL = URL + "/network/download";
+    private String UPLOAD_URL = URL + "/network/upload";
+    private String DEVICE_NUMBER = "1233211234567";
+    private String DEVICE_NAME = "giao";
+    private String APPLICATION = "xxxx";
     private String token;
 
     private static int BUFFER = 1024;
@@ -84,6 +85,51 @@ public class NetUtils {
             e.printStackTrace();
         }
     }
+
+//    public void doRegisterAndDownload(String ip, String port) throws JSONException{
+//        URL = "http://" + ip + ":" + port;
+//        REGISTER_URL = URL + "/device/register" ;
+//        OkHttpClient okHttpClient = new OkHttpClient();
+//        JSONObject param = new JSONObject();
+//        param.put("device_number", DEVICE_NUMBER);
+//        param.put("device_name", DEVICE_NAME);
+//        param.put("application", APPLICATION);
+//        MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+//        String params =  param.toString();
+//
+//        RequestBody requestBody = RequestBody.create(JSON, params);
+//        //创建一个请求对象
+//        Request request = new Request.Builder()
+//                .url(REGISTER_URL)
+//                .post(requestBody)
+//                .build();
+//        try {
+//            Response response=okHttpClient.newCall(request).execute();
+//            //判断请求是否成功
+//            if(response.isSuccessful()){
+//                InputStream inputStream = response.byteStream();
+//                String dirPath = cachePath + "/model/download/";
+//
+//                if (!new File(dirPath).exists()) {
+//                    new File(dirPath).mkdir();
+//                }
+//                String filePath = dirPath + network_file_name;
+//
+//                boolean result = WriteFile4InputStream(filePath, inputStream);
+//
+//                if (result) {
+//                    System.out.println("模型下载成功");
+//                }else {
+//                    System.out.println("模型下载失败");
+//                }
+//            } else {
+//                System.out.println( "设备注册失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     public void doConnect() throws IOException, JSONException {
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -160,14 +206,13 @@ public class NetUtils {
             OutputStream os = new FileOutputStream(FilePath);
             byte[] arr = new byte[1024];
             int len = 0;
-            while ( ( len=inputStream.read(arr) ) != -1 ){
+            while ( ( len=inputStream.read(arr) ) != -1 ) {
                 os.write(arr, 0, len);
             }
             os.close();
             inputStream.close();
             result = true;
-        }catch (IOException e)
-        {
+        }catch (IOException e) {
             e.printStackTrace();
             result = false;
         }
@@ -180,7 +225,7 @@ public class NetUtils {
             return;
         }
         InputStream inputStream = response.byteStream();
-        String dirPath = cachePath + "/model/";
+        String dirPath = cachePath + "/model/download/";
 
         if (!new File(dirPath).exists()) {
             new File(dirPath).mkdir();
@@ -363,4 +408,7 @@ public class NetUtils {
         return  name;
     }
 
+
+
 }
+
