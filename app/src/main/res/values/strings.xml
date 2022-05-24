@@ -9,15 +9,15 @@
     <string name="con_learn">持续学习</string>
     <string name="model_down">模型下载</string>
     <string name="model_up">模型上传</string>
-    <string name="class1">类别1:</string>
-    <string name="class2">类别2:</string>
-    <string name="class3">类别3:</string>
-    <string name="class4">类别4:</string>
+    <string name="class1">石头:</string>
+    <string name="class2">剪刀:</string>
+    <string name="class3">布:</string>
+<!--    <string name="class4">类别4:</string>-->
     <string name="request">请求连接</string>
     <array name="classname">
-        <item>类别1</item>
-        <item>类别2</item>
-        <item>类别3</item>
-        <item>类别4</item>
+        <item>石头</item>
+        <item>剪刀</item>
+        <item>布</item>
+<!--        <item>类别4</item>-->
     </array>
 </resources>

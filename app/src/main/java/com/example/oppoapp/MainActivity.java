@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,13 +35,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetUtils netUtils = new NetUtils();
     private String network_name = "model";
     private String network_file_name = network_name+".tflite";
-
-
+    private RelativeLayout camera_ll;
+    private TextView tv_acc;
     private TextView tv_trans;
     private TextView tv_fed;
     private TextView tv_epoch;
     private TextView tv_loss;
-    private TextView tv_acc;
     private Button bn_train;
     private Button bn_test;
     private Button add_data;
@@ -65,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
         System.out.println(modelFilePath);
         loadModel(modelFilePath);
+
+        camera_ll = findViewById(R.id.camera_ll);
+        camera_ll.setVisibility(View.INVISIBLE);
 
 
         tv_trans = (TextView) findViewById(R.id.tv_trans);
@@ -129,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_test:
                 //点击推理按钮
+                camera_ll.setVisibility(View.VISIBLE);
                 Intent inferIntent = new Intent(MainActivity.this, CameraActivity.class);
                 startActivity(inferIntent);
                 break;

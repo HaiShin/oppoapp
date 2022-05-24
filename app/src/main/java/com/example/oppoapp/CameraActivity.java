@@ -66,7 +66,10 @@ public class CameraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         globalApp = ((GlobalApp) getApplicationContext());
-        setContentView(R.layout.activity_camera);
+//        setContentView(R.layout.activity_camera);
+        setContentView(R.layout.activity_main);
+
+
         if (!hasPermission()) {
             requestPermission();
         }
