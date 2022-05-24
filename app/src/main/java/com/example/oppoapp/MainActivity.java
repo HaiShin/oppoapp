@@ -27,12 +27,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.PrimitiveIterator;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private GlobalApp globalApp;
-    private NetUtils netUtils = new NetUtils();
-    private String network_name = "model";
+    private NetUtils netUtils;
+    private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
+    private String DEVICE_NUMBER;
+    private Utils utils = new Utils();
 
 
     private TextView tv_trans;
@@ -61,6 +64,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         setContentView(R.layout.activity_main);
+        globalApp = ((GlobalApp) getApplicationContext());
+        if ( DEVICE_NUMBER == null ) {
+            DEVICE_NUMBER = utils.randomString(10);
+            globalApp.setDeviceNumber(DEVICE_NUMBER);
+        }
+        System.out.println("main:"+DEVICE_NUMBER);
+        netUtils = new NetUtils(DEVICE_NUMBER);
+
 
         String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
         System.out.println(modelFilePath);
@@ -200,17 +211,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         thread.start();
         thread.join();
-//        Toast.makeText(this,"数据下载完成",Toast.LENGTH_SHORT).show();
-//        Toast.makeText(this,"开始加载数据",Toast.LENGTH_SHORT).show();
-//        Thread thread2 = new Thread(() -> {
-//            try {
-//
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        thread2.start();
-//        thread2.join();
         Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
     }
 
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 netUtils.doRegister();
                 netUtils.doConnect();
-            } catch (IOException | JSONException e) {
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
@@ -245,8 +245,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void loadModel(String modelFilePath){
+        if (!globalApp.isNull()){
+            return;
+        }
         if (new File(modelFilePath).exists()) {
-            globalApp = ((GlobalApp) getApplicationContext());
+
             String parentDir = getCacheDir().getAbsolutePath();
             List<String> list = Arrays.asList("paper","rock","scissors");
             try {
@@ -271,4 +274,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tv_acc.setText(acc + "");
         });
     }
+
+
 }

@@ -46,13 +46,10 @@ public class ModelLoader {
   }
 
   protected MappedByteBuffer loadMappedFile(String filePath) throws IOException {
-//      fileDescriptor = assetManager.openFd(this.directoryName + "/" + filePath);
-//    FileDescriptor fileDescriptor = new FileDescriptor();
     File file  = new File(this.parentDir + "/" + this.directoryName + "/" + filePath);
     if (!file.exists()){
       throw new IOException("the file not is exit!");
     }
-    System.out.println("giaogiaogiao");
     FileInputStream inputStream = new FileInputStream(file);
     FileChannel fileChannel = inputStream.getChannel();
     return fileChannel.map(MapMode.READ_ONLY, 0, file.length());

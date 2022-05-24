@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.ConditionVariable;
 
+import org.json.JSONException;
 import org.tensorflow.lite.examples.transfer.api.ModelLoader;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel;
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel.LossConsumer;
@@ -31,6 +32,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,20 +61,7 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
 //    Arrays.asList("1", "2", "3", "4")
     model =
         new TransferLearningModel(
-            new ModelLoader(parentDir, "model"), list);
-
-    new Thread(() -> {
-//      while (!Thread.interrupted()) {
-        shouldTrain.block();
-        try {
-          model.train(epochs, lossConsumer, accConsumer).get();
-        } catch (ExecutionException e) {
-          throw new RuntimeException("Exception occurred during model training", e.getCause());
-        } catch (InterruptedException e) {
-          // no-op
-        }
-//      }
-    }).start();
+            new ModelLoader(parentDir, "model/download"), list);
   }
 
   // This method is thread-safe.
@@ -116,7 +105,29 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
   public void enableTraining(LossConsumer lossConsumer,AccConsumer accConsumer) {
     this.lossConsumer = lossConsumer;
     this.accConsumer = accConsumer;
-    shouldTrain.open();
+    new Thread(() -> {
+      try {
+        model.train(epochs, lossConsumer, accConsumer).get();
+      } catch (ExecutionException e) {
+        throw new RuntimeException("Exception occurred during model training", e.getCause());
+      } catch (InterruptedException e) {
+        // no-op
+      }
+    }).start();
+  }
+
+  public void fedTraining(LossConsumer lossConsumer, AccConsumer accConsumer) {
+    this.lossConsumer = lossConsumer;
+    this.accConsumer = accConsumer;
+
+    try {
+      model.train(1, lossConsumer, accConsumer).get();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+
   }
 
   /**
@@ -128,10 +139,14 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
 
   /**
    * Export the trained weights as a checkpoint file.
-   * @param dirPath
+   * @param filePath
    */
-  public void saveModel(String dirPath){
-    model.saveModel(dirPath);
+  public void saveModel(String filePath){
+    model.saveModel(filePath);
+  }
+
+  public void restoreModel(String filePath) {
+    model.restoreModel(filePath);
   }
 
   /** Frees all model resources and shuts down all background threads. */
@@ -142,4 +157,5 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
   public void setEpochs(int epochs) {
     this.epochs = epochs;
   }
+
 }

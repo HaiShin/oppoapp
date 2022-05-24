@@ -126,9 +126,9 @@ public class LiteMultipleSignatureModel implements Closeable {
     return this.interpreter.getInputTensorFromSignature("x", "test").shape();
   }
 
-  public void saveModel(String dirPath) {
-    File outputFile = new File(dirPath, "checkpoint.ckpt");
-    System.out.println(dirPath);
+  public void saveModel(String filePath) {
+    File outputFile = new File(filePath);
+    System.out.println(filePath);
     Map<String, Object> inputs = new HashMap<>();
     inputs.put("checkpoint_path", outputFile.getAbsolutePath());
     Map<String, Object> outputs = new HashMap<>();
@@ -136,10 +136,17 @@ public class LiteMultipleSignatureModel implements Closeable {
     System.out.println("checkpoint文件保存完成！");
   }
 
+  public void restoreModel(String ckptFilePath) {
+    // Load the trained weights from the checkpoint file.
+    File outputFile = new File(ckptFilePath);
+    Map<String, Object> inputs = new HashMap<>();
+    inputs.put("checkpoint_path", outputFile.getAbsolutePath());
+    Map<String, Object> outputs = new HashMap<>();
+    this.interpreter.runSignature(inputs, outputs, "restore");
+  }
+
   @Override
   public void close() {
     this.interpreter.close();
   }
-
-
 }

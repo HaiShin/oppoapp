@@ -5,6 +5,7 @@ import android.app.Application;
 public class GlobalApp extends Application {
 
     private TransferLearningModelWrapper tlModel;
+    private String device_number;
 
     public TransferLearningModelWrapper getTlModel() {
         return tlModel;
@@ -12,6 +13,13 @@ public class GlobalApp extends Application {
 
     public void setTlModel(TransferLearningModelWrapper tlModel) {
         this.tlModel = tlModel;
+    }
+
+    public void setDeviceNumber(String device_number){
+        this.device_number = device_number;
+    }
+    public String getDeviceNumber(){
+        return device_number;
     }
 
     public boolean isNull() {
