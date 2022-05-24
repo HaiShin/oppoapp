@@ -93,16 +93,21 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.request:
-                View inflate = LayoutInflater.from(fed_activity.this).inflate(R.layout.request_dialog, null, false);
-                CreateRequestDialog crdialog = new CreateRequestDialog(fed_activity.this, inflate);
-                crdialog.setCancelable(true);
-                crdialog.setCanceledOnTouchOutside(true);
-                crdialog.show();
+                CreateRequestDialog rdialog = new CreateRequestDialog(fed_activity.this,"连接");
+                rdialog.setOnDialogClickListener(new CreateRequestDialog.OnDialogClickListener() {
+                    @Override
+                    public void onSureCLickListener(EditText mip,EditText mport) {
+
+                        System.out.println("mip:"+mip.getText());
+                        System.out.println("mport:"+mport.getText());
+                    }
+
+                });
+                rdialog.show();
                 break;
             case R.id.bn_train_2:
                 //点击训练按钮,在这添加后续操作
                 fedTrain();
-                Toast.makeText(this, "点击了训练按钮2", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.bn_test_2:
                 //点击推理按钮
