@@ -124,7 +124,7 @@ public final class TransferLearningModel implements Closeable {
     try {
       this.model =
           new LiteMultipleSignatureModel(
-              modelLoader.loadMappedFile("model.tflite"), classes.size());
+              modelLoader.loadMappedFile("MobileNetV2.tflite"), classes.size());
     } catch (IOException e) {
       throw new RuntimeException("Couldn't read underlying model for TransferLearningModel", e);
     }
@@ -199,7 +199,6 @@ public final class TransferLearningModel implements Closeable {
 
     return executor.submit(
         () -> {
-
           try {
             for (int epoch = 0; epoch < numEpochs; epoch++) {
               trainingInferenceLock.lock();
@@ -274,6 +273,7 @@ public final class TransferLearningModel implements Closeable {
     if (accConsumer != null) {
       accConsumer.onAcc(avgAcc);
     }
+    trainingInferenceLock.unlock();
   }
 
   /**
@@ -324,10 +324,13 @@ public final class TransferLearningModel implements Closeable {
         model.getExpectedBatchSize());
   }
 
-  public void saveModel(String dirPath) {
-    this.model.saveModel(dirPath);
+  public void saveModel(String filePath) {
+    this.model.saveModel(filePath);
   }
 
+  public void restoreModel(String filePath) {
+    this.model.restoreModel(filePath);
+  }
   /**
    * Constructs an iterator that iterates over training sample batches.
    *

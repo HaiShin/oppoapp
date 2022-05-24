@@ -29,14 +29,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.PrimitiveIterator;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private GlobalApp globalApp;
-    private NetUtils netUtils = new NetUtils();
-    private String network_name = "model";
+    private NetUtils netUtils;
+    private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
     private RelativeLayout camera_ll;
     private TextView tv_acc;
+    private String DEVICE_NUMBER;
+    private Utils utils = new Utils();
+
+
     private TextView tv_trans;
     private TextView tv_fed;
     private TextView tv_epoch;
@@ -62,6 +67,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         setContentView(R.layout.activity_main);
+        globalApp = ((GlobalApp) getApplicationContext());
+        if ( DEVICE_NUMBER == null ) {
+            DEVICE_NUMBER = utils.randomString(10);
+            globalApp.setDeviceNumber(DEVICE_NUMBER);
+        }
+        System.out.println("main:"+DEVICE_NUMBER);
+        netUtils = new NetUtils(DEVICE_NUMBER);
+
 
         String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
         System.out.println(modelFilePath);
@@ -153,7 +166,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.model_down:
                 //模型下载
-                downModel();
+                try {
+                    downModel();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.model_up:
                 //模型上传
@@ -201,57 +218,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         thread.start();
         thread.join();
-//        Toast.makeText(this,"数据下载完成",Toast.LENGTH_SHORT).show();
-//        Toast.makeText(this,"开始加载数据",Toast.LENGTH_SHORT).show();
-//        Thread thread2 = new Thread(() -> {
-//            try {
-//
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        thread2.start();
-//        thread2.join();
         Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
     }
 
-    private void downModel() {
+    private void downModel() throws InterruptedException {
         String cachePath = getCacheDir().getAbsolutePath();
 
-        new Thread(){
-            @Override
-            public void run() {
-                try {
-                    netUtils.doRegister();
-                    netUtils.doConnect();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        Thread thread = new Thread(() -> {
+            try {
+                netUtils.doRegister();
+                netUtils.doConnect();
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        }.start();
+        });
+        thread.start();
+        thread.join();
 
-        new Thread(){
-            @Override
-            public void run() {
-                try {
-                    netUtils.download(cachePath);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        Thread thread2 = new Thread(() -> {
+            try {
+                netUtils.download(cachePath);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }.start();
+        });
+        thread2.start();
+        thread2.join();
+        Toast.makeText(this,"模型下载成功",Toast.LENGTH_SHORT).show();
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
-        loadModel(modelFilePath);
+//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download" + "/" + network_file_name;
+//        loadModel(modelFilePath);
 
     }
 
     private void loadModel(String modelFilePath){
+        if (!globalApp.isNull()){
+            return;
+        }
         if (new File(modelFilePath).exists()) {
-            globalApp = ((GlobalApp) getApplicationContext());
+
             String parentDir = getCacheDir().getAbsolutePath();
             List<String> list = Arrays.asList("paper","rock","scissors");
             try {
@@ -276,4 +281,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tv_acc.setText(acc + "");
         });
     }
+
+
 }

@@ -21,10 +21,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
     private static final String TAG = Utils.class.getName();
     private static final int LOWER_BYTE_MASK = 0xFF;
+    private static final String CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 
     // 获取最优的预览图片大小
     public static Size chooseOptimalSize(final Size[] choices, final int width, final int height) {
@@ -202,6 +206,25 @@ public class Utils {
         canvas.drawARGB(0xFF, 0xFF, 0xFF, 0xFF);
         canvas.drawBitmap(source, paddingX, paddingY, null);
         return paddedBitmap;
+    }
+
+    public static String randomString( int length) {
+        String sampleString = CHARS;
+        if (sampleString == null || sampleString.length() == 0) {
+            return "";
+        }
+        if (length < 1) {
+            length = 1;
+        }
+        final StringBuilder sb = new StringBuilder(length);
+        int baseLength = sampleString.length();
+        Random random=new Random();
+        while (sb.length() < length) {
+
+            int number=random.nextInt(baseLength);
+            sb.append(sampleString.charAt(number));
+        }
+        return sb.toString();
     }
 
 

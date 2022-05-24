@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -33,16 +34,22 @@ public class NetUtils {
     private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
     private String network_version = "v1.0";
-    private final static String URL = "http://106.15.39.182:8080";
-    private final static String REGISTER_URL = URL + "/device/register";
-    private static final String CONNECT_URL = URL + "/device/connect";
-    private static final String DOWNLOAD_URL = URL + "/network/download";
-    private static final String UPLOAD_URL = URL + "/network/upload";
-    private static final String DEVICE_NUMBER = "1233211234567";
-    private static final String DEVICE_NAME = "giao";
+    private String URL = "http://47.100.0.251:80";
+    private String REGISTER_URL = URL + "/device/register";
+    private String CONNECT_URL = URL + "/device/connect";
+    private String DOWNLOAD_URL = URL + "/network/download";
+    private String UPLOAD_URL = URL + "/network/upload";
+    private String DEVICE_NUMBER;
+    private String DEVICE_NAME = "giao";
+    private String APPLICATION = "xxxx";
+    private String AGGREGATE_URL = URL + "/network/aggregate";
     private String token;
 
     private static int BUFFER = 1024;
+
+    public NetUtils(String DEVICE_NUMBER){
+        this.DEVICE_NUMBER = DEVICE_NUMBER;
+    }
 
     public void doRegister() throws JSONException {
         OkHttpClient okHttpClient = new OkHttpClient();
@@ -85,11 +92,70 @@ public class NetUtils {
         }
     }
 
-    public void doConnect() throws IOException, JSONException {
+    public void doRegisterAndDownload(String cachePath) throws JSONException{
+//        URL = "http://" + ip + ":" + port;
+//        REGISTER_URL = URL + "/device/register" ;
+        JSONObject param = new JSONObject();
+        param.put("device_number", DEVICE_NUMBER);
+        param.put("device_name", DEVICE_NAME);
+        param.put("application", APPLICATION);
+        MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+        String params =  param.toString();
+
+        RequestBody requestBody = RequestBody.create(JSON, params);
+
+        OkHttpClient okHttpClient = new OkHttpClient()
+                .newBuilder()
+                .connectTimeout(60000, TimeUnit.SECONDS)
+                .readTimeout(60000, TimeUnit.SECONDS)
+                .build();
+
+        Request request = new Request.Builder()
+                .post(requestBody)
+                .url(REGISTER_URL)
+                .build();
+        Call call = okHttpClient.newCall(request);
+
+        try {
+            ResponseBody responseBody = call.execute().body();
+            //判断请求是否成功
+            if(responseBody != null){
+                InputStream inputStream = responseBody.byteStream();
+                String dirPath = cachePath + "/model/download/";
+
+                if (!new File(dirPath).exists()) {
+                    new File(dirPath).mkdir();
+                }
+                String filePath = dirPath + network_file_name;
+                boolean result = WriteFile4InputStream(filePath, inputStream);
+                if (result) {
+                    System.out.println("模型下载成功");
+                }else {
+                    System.out.println("模型下载失败");
+                }
+            } else {
+                System.out.println( "设备注册失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void doUpAndDownLoadParam(String filePath, CountDownLatch countDownLatch ) {
+        upLoadingFile(filePath, AGGREGATE_URL);
+        countDownLatch.countDown();
+    }
+
+    public void doConnect()  {
         OkHttpClient okHttpClient = new OkHttpClient();
         // 先封装一个 JSON 对象
         JSONObject param = new JSONObject();
-        param.put("device_number", DEVICE_NUMBER);
+        try {
+            param.put("device_number", DEVICE_NUMBER);
+            param.put("train_mode", "async");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
         MediaType JSON = MediaType.parse("application/json;charset=utf-8");
         String params =  param.toString();
         RequestBody requestBody = RequestBody.create(JSON, params);
@@ -116,20 +182,17 @@ public class NetUtils {
                     System.out.println("设备连接失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
         }
     }
 
     public ResponseBody getResponeBody(String url) {
-        if (token == null) {
-            System.out.println("token为空，需要先连接服务器。"); //消息发送的内容如：  Object String 类 int
-            return null;
-        }
-        url = url + "?" +
-                "network_name=" + network_name +
-                "&network_version=" + network_version +
-                "&token=" + token;
+//        if (token == null) {
+//            System.out.println("token为空，需要先连接服务器。"); //消息发送的内容如：  Object String 类 int
+//            return null;
+//        }
+
         System.out.println(url);
         ResponseBody result =null;
         OkHttpClient okHttpClient = new OkHttpClient()
@@ -152,22 +215,23 @@ public class NetUtils {
     }
 
     //将InputStream写入到文件，成功返回true 失败返回false
-    public boolean WriteFile4InputStream(String FilePath, InputStream inputStream)
-    {
+    public boolean WriteFile4InputStream(String FilePath, InputStream inputStream) throws IOException {
+        if (!new File(FilePath).exists()) {
+            new File(FilePath).createNewFile();
+        }
         //默认为flase 即失败
         boolean result = false;
         try {
             OutputStream os = new FileOutputStream(FilePath);
             byte[] arr = new byte[1024];
             int len = 0;
-            while ( ( len=inputStream.read(arr) ) != -1 ){
+            while ( ( len=inputStream.read(arr) ) != -1 ) {
                 os.write(arr, 0, len);
             }
             os.close();
             inputStream.close();
             result = true;
-        }catch (IOException e)
-        {
+        }catch (IOException e) {
             e.printStackTrace();
             result = false;
         }
@@ -175,12 +239,16 @@ public class NetUtils {
     }
 
     public void download(String cachePath) throws IOException {
-        ResponseBody response = getResponeBody(DOWNLOAD_URL);
+        String url = DOWNLOAD_URL + "?" +
+                "network_name=" + network_name +
+                "&network_version=" + network_version +
+                "&token=" + token;
+        ResponseBody response = getResponeBody(url);
         if (response == null ) {
             return;
         }
         InputStream inputStream = response.byteStream();
-        String dirPath = cachePath + "/model/";
+        String dirPath = cachePath + "/model/download/";
 
         if (!new File(dirPath).exists()) {
             new File(dirPath).mkdir();
@@ -196,27 +264,25 @@ public class NetUtils {
         }
     }
 
-    private void upload(String path) {
-//        String path  = getCacheDir().getAbsolutePath() + File.separator + network_file_name;
-        String url = UPLOAD_URL + "?network_name=" + network_name;
-        System.out.println(url);
-        upLoadingFile(path,url);
-    }
+//    private void upload(String path) {
+////        String path  = getCacheDir().getAbsolutePath() + File.separator + network_file_name;
+//        String url = UPLOAD_URL + "?network_name=" + network_name;
+//        System.out.println(url);
+//        upLoadingFile(path,url);
+//    }
 
     /**
-     * 上传文件(支持单个, 多个文件上传)
+     * 上传ckpt文件
      */
-    public void upLoadingFile(String filePath,String url) {
+    public void upLoadingFile(String filePath,String url)  {
 
-        Message msg = new Message();
-        msg.what = 1;
         // 1.RequestBody
         //创建MultipartBody.Builder，用于添加请求的数据
         MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM);
-        File file = new File(filePath); //生成文件
+        File file = new File(filePath); //ckpt文件
         if (!file.exists()){
-            System.out.println("网络文件不存在");
+            System.out.println("ckpt文件不存在");
             return;
         }
 
@@ -224,9 +290,12 @@ public class NetUtils {
         String fileType = getMimeType(file.getName());
         //给Builder添加上传的文件
         multipartBodyBuilder.addFormDataPart(
-                "network_file",  //请求的名字
+                "network_weight",  //请求的名字
                 file.getName(), //文件的文字，服务器端用来解析的
                 RequestBody.create(MediaType.parse(fileType), file) //创建RequestBody，把上传的文件放入
+        );
+        multipartBodyBuilder.addFormDataPart(
+                "network_name", network_name
         );
 
         // 添加其他参数信息, 如果只是单纯的上传文件, 下面的添加其他参数的方法不用调用
@@ -247,33 +316,22 @@ public class NetUtils {
                 .build();
 
         Call call = mOkHttpClient.newCall(requestBuilderRequest);
-
-
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                //请求失败监听: 异步请求(非主线程)
-                System.out.println("文件上传出错,请重试");
-                e.printStackTrace();
+        try {
+            ResponseBody responseBody = call.execute().body();
+            if (responseBody == null ) {
+                return;
+            }
+            InputStream inputStream = responseBody.byteStream();
+            boolean result = WriteFile4InputStream(filePath, inputStream);
+            if (result) {
+                System.out.println("参数文件下载成功");
+            }else {
+                System.out.println("参数文件下载失败");
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String res = response.body().string();
-                System.out.println(res);
-                try {
-                    JSONObject resJson = new JSONObject(res);
-                    int code = resJson.getInt("code");
-                    if (code == 1) {
-                        System.out.println("文件上传成功");
-                    } else {
-                        System.out.println("文件上传失败");
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static String getMimeType(String fileName) {
@@ -307,7 +365,12 @@ public class NetUtils {
             return false;
         }
         InputStream inputStream = response.byteStream();
-        boolean result = WriteFile4InputStream(filePath + "/rps.zip", inputStream);
+        boolean result = false;
+        try {
+            result = WriteFile4InputStream(filePath + "/rps.zip", inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         if (result) {
             System.out.println("数据下载成功");
             unzip(filePath+"/rps.zip",filePath + "/");
@@ -363,4 +426,7 @@ public class NetUtils {
         return  name;
     }
 
+
+
 }
+
