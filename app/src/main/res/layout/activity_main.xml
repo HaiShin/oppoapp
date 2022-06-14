@@ -60,27 +60,26 @@
             android:id="@+id/texture_view"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_alignParentRight="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true"/>
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true" />
 
         <TextView
-            android:id="@+id/tx1"
+            android:id="@+id/tx_class1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
-            android:text="@string/class1"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:translationX="-65dp" />
 
         <TextView
-            android:id="@+id/tx_class1"
+            android:id="@+id/tx1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
@@ -93,14 +92,13 @@
             android:translationX="5dp" />
 
         <TextView
-            android:id="@+id/tx2"
+            android:id="@+id/tx_class2"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
-            android:text="@string/class2"
             android:textAlignment="center"
             android:textColor="@color/little_gray"
             android:textSize="18sp"
@@ -108,27 +106,25 @@
             android:translationY="45dp" />
 
         <TextView
-            android:id="@+id/tx_class2"
+            android:id="@+id/tx2"
             android:layout_width="60dp"
             android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="15dp"
             android:textAlignment="center"
             android:textColor="@color/gray"
             android:textSize="18sp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
             android:translationX="5dp"
-            android:translationY="45dp"
-            />
+            android:translationY="45dp" />
 
         <TextView
-            android:id="@+id/tx3"
+            android:id="@+id/tx_class3"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
-            android:text="@string/class3"
             android:textAlignment="center"
             android:textColor="@color/little_gray"
             android:textSize="18sp"
@@ -139,7 +135,7 @@
             />
 
         <TextView
-            android:id="@+id/tx_class3"
+            android:id="@+id/tx3"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"

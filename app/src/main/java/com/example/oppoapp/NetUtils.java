@@ -34,7 +34,7 @@ public class NetUtils {
     private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
     private String network_version = "v1.0";
-    private String URL = "http://47.100.0.251:80";
+    private String URL = "http://47.100.0.251:30000";
     private String REGISTER_URL = URL + "/device/register";
     private String CONNECT_URL = URL + "/device/connect";
     private String DOWNLOAD_URL = URL + "/network/download";
@@ -92,9 +92,8 @@ public class NetUtils {
         }
     }
 
-    public void doRegisterAndDownload(String cachePath) throws JSONException{
-//        URL = "http://" + ip + ":" + port;
-//        REGISTER_URL = URL + "/device/register" ;
+    public boolean doRegisterAndDownload(String cachePath) throws JSONException{
+
         JSONObject param = new JSONObject();
         param.put("device_number", DEVICE_NUMBER);
         param.put("device_name", DEVICE_NAME);
@@ -124,7 +123,7 @@ public class NetUtils {
                 String dirPath = cachePath + "/model/download/";
 
                 if (!new File(dirPath).exists()) {
-                    new File(dirPath).mkdir();
+                    new File(dirPath).mkdirs();
                 }
                 String filePath = dirPath + network_file_name;
                 boolean result = WriteFile4InputStream(filePath, inputStream);
@@ -132,13 +131,16 @@ public class NetUtils {
                     System.out.println("模型下载成功");
                 }else {
                     System.out.println("模型下载失败");
+                    return false;
                 }
             } else {
                 System.out.println( "设备注册失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
+                return false;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     public void doUpAndDownLoadParam(String filePath, CountDownLatch countDownLatch ) {
@@ -264,12 +266,6 @@ public class NetUtils {
         }
     }
 
-//    private void upload(String path) {
-////        String path  = getCacheDir().getAbsolutePath() + File.separator + network_file_name;
-//        String url = UPLOAD_URL + "?network_name=" + network_name;
-//        System.out.println(url);
-//        upLoadingFile(path,url);
-//    }
 
     /**
      * 上传ckpt文件

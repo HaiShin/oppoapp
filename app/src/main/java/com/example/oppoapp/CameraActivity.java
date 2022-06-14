@@ -58,6 +58,13 @@ public class CameraActivity extends AppCompatActivity {
 //    private TFLiteClassificationUtil tfLiteClassificationUtil;
     private TextView textView;
 
+    private TextView tx1;
+    private TextView tx2;
+    private TextView tx3;
+    private TextView class1;
+    private TextView class2;
+    private TextView class3;
+
     private TransferLearningModelWrapper tlModel;
     private Utils imageUtils = new Utils();
 
@@ -86,6 +93,15 @@ public class CameraActivity extends AppCompatActivity {
         // 获取控件
         mTextureView = findViewById(R.id.texture_view);
         textView = findViewById(R.id.result_text);
+
+        // 文本框
+        tx1 = findViewById(R.id.tx1);
+        tx2 = findViewById(R.id.tx2);
+        tx3 = findViewById(R.id.tx3);
+        class1 = findViewById(R.id.tx_class1);
+        class2 = findViewById(R.id.tx_class2);
+        class3 = findViewById(R.id.tx_class3);
+
     }
 
 
@@ -118,14 +134,21 @@ public class CameraActivity extends AppCompatActivity {
             // 预测图像
             long start = System.currentTimeMillis();
             TransferLearningModel.Prediction[] predictions = tlModel.predict(imges);
-            long end = System.currentTimeMillis();
-            StringBuffer show_text = new StringBuffer("预测结果标签：");
-            for (TransferLearningModel.Prediction prediction : predictions) {
-                show_text.append("\n类别：").append(prediction.getClassName())
-                        .append("\n概率：").append(prediction.getConfidence());
-            }
-            show_text.append("\n时间：").append(end - start).append("ms");
-            textView.setText(show_text);
+            class1.setText(predictions[0].getClassName());
+            tx1.setText(predictions[0].getConfidence() + "");
+            class2.setText(predictions[1].getClassName());
+            tx2.setText(predictions[1].getConfidence() + "");
+            class3.setText(predictions[2].getClassName());
+            tx3.setText(predictions[2].getConfidence() + "");
+//            long end = System.currentTimeMillis();
+//            StringBuffer show_text = new StringBuffer("预测结果标签：");
+//            for (TransferLearningModel.Prediction prediction : predictions) {
+//                show_text.append("\n类别：").append(prediction.getClassName())
+//                        .append("\n概率：").append(prediction.getConfidence());
+//            }
+//            System.out.println(show_text.toString());
+//            show_text.append("\n时间：").append(end - start).append("ms");
+//            textView.setText(show_text);
         } catch (Exception e) {
             e.printStackTrace();
         }

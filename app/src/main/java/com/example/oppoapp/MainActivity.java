@@ -3,18 +3,14 @@ package com.example.oppoapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -24,12 +20,9 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.PrimitiveIterator;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     private GlobalApp globalApp;
@@ -76,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         netUtils = new NetUtils(DEVICE_NUMBER);
 
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model" + "/" + network_file_name;
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
         System.out.println(modelFilePath);
         loadModel(modelFilePath);
 
@@ -153,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.add_data:
                 //添加数据
                 try {
+                    Toast.makeText(this, "开始加载数据", Toast.LENGTH_SHORT).show();
                     getData();
                 } catch (FileNotFoundException | InterruptedException e) {
                     e.printStackTrace();
@@ -166,11 +160,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.model_down:
                 //模型下载
-                try {
-                    downModel();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
+                doRegisterAndDownload();
                 break;
             case R.id.model_up:
                 //模型上传
@@ -209,7 +200,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         String downDataUrl = "http://112.124.109.236/rps_64.zip";
         Thread thread = new Thread(() -> {
-//                netUtils.getData(dataPath, downDataUrl);
+            if (!new File(dataPath + "/rps_64").exists()) {
+                netUtils.getData(dataPath, downDataUrl);
+            }
             try {
                 globalApp.getTlModel().addBatchSample(dataPath + "/rps_64");
             } catch (FileNotFoundException e) {
@@ -221,38 +214,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
     }
 
-    private void downModel() throws InterruptedException {
-        String cachePath = getCacheDir().getAbsolutePath();
-
+    public void doRegisterAndDownload() {
+        String cacheDir = getCacheDir().getAbsolutePath();
+        AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
             try {
-                netUtils.doRegister();
-                netUtils.doConnect();
+                flag.set(netUtils.doRegisterAndDownload(cacheDir));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
         thread.start();
-        thread.join();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (flag.get()) {
+            Toast.makeText(this, "模型下载完成", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
+        }
 
-        Thread thread2 = new Thread(() -> {
-            try {
-                netUtils.download(cachePath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-        thread2.start();
-        thread2.join();
-        Toast.makeText(this,"模型下载成功",Toast.LENGTH_SHORT).show();
-
-//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download" + "/" + network_file_name;
-//        loadModel(modelFilePath);
-
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
+        loadModel(modelFilePath);
+        Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
 
     private void loadModel(String modelFilePath){
         if (!globalApp.isNull()){
+            Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             return;
         }
         if (new File(modelFilePath).exists()) {
@@ -261,6 +252,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             List<String> list = Arrays.asList("paper","rock","scissors");
             try {
                 globalApp.setTlModel(new TransferLearningModelWrapper(parentDir, list));
+                Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 throw new RuntimeException("加载模型报错！",e);
             }
