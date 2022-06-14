@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class fed_activity extends AppCompatActivity implements View.OnClickListener {
     private TextView tv_trans2;
@@ -48,11 +49,16 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fed);
         globalApp = ((GlobalApp) getApplicationContext());
+
+
         if (DEVICE_NUMBER == null) {
             DEVICE_NUMBER = globalApp.getDeviceNumber();
         }
-        System.out.println("fed:" + DEVICE_NUMBER);
         netUtils = new NetUtils(DEVICE_NUMBER);
+
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
+        System.out.println(modelFilePath);
+        loadModel(modelFilePath);
 
         tv_trans2 = (TextView) findViewById(R.id.tv_trans2);
         tv_fed2 = (TextView) findViewById(R.id.tv_fed2);
@@ -117,6 +123,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             case R.id.add_data_2:
                 //添加数据
                 try {
+                    Toast.makeText(this, "开始加载数据", Toast.LENGTH_SHORT).show();
                     getData();
                 } catch (FileNotFoundException | InterruptedException e) {
                     e.printStackTrace();
@@ -130,6 +137,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.model_down_2:
                 //模型下载
+                Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
                 doRegisterAndDownload();
                 break;
             case R.id.model_up_2:
@@ -142,10 +150,10 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
 
     public void doRegisterAndDownload() {
         String cacheDir = getCacheDir().getAbsolutePath();
-
+        AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
             try {
-                netUtils.doRegisterAndDownload(cacheDir);
+                flag.set(netUtils.doRegisterAndDownload(cacheDir));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -156,14 +164,20 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        if (flag.get()) {
+            Toast.makeText(this, "模型下载完成", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
+        }
 
         String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
         loadModel(modelFilePath);
-        Toast.makeText(this, "模型下载完成", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
 
     private void loadModel(String modelFilePath) {
         if (!globalApp.isNull()){
+            Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             return;
         }
         if (new File(modelFilePath).exists()) {
@@ -171,6 +185,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             List<String> list = Arrays.asList("paper", "rock", "scissors");
             try {
                 globalApp.setTlModel(new TransferLearningModelWrapper(parentDir, list));
+                Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 throw new RuntimeException("加载模型报错！", e);
             }
@@ -182,7 +197,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private void getData() throws FileNotFoundException, InterruptedException {
         String dataPath = getCacheDir().getAbsolutePath() + "/rps";
         if (!new File(dataPath).exists()) {
-            new File(dataPath).mkdir();
+            new File(dataPath).mkdirs();
         }
 
         String downDataUrl = "http://112.124.109.236/rps_64.zip";
@@ -211,7 +226,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         new Thread(() -> {
             netUtils.doConnect();
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 50; i++) {
                 CountDownLatch countDownLatch = new CountDownLatch(1);
                 System.out.println(i);
                 String ckptFilePath = ckptDirPath + "/checkpoint_" + i + ".ckpt";
@@ -247,6 +262,6 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
 
             }
         }).start();
-        Toast.makeText(this, "联邦学习完成", Toast.LENGTH_SHORT).show();
+
     }
 }
