@@ -2,6 +2,7 @@ package com.example.oppoapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
@@ -24,6 +25,8 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -65,6 +68,16 @@ public class CameraActivity extends AppCompatActivity {
     private TextView class2;
     private TextView class3;
 
+    private TextView tv_epoch;
+    private TextView tv_loss;
+    private TextView tv_acc;
+
+    private TextView tx_epoch;
+    private TextView tx_loss;
+    private TextView tx_acc;
+    private RelativeLayout camera_ll;
+
+
     private TransferLearningModelWrapper tlModel;
     private Utils imageUtils = new Utils();
 
@@ -73,8 +86,46 @@ public class CameraActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         globalApp = ((GlobalApp) getApplicationContext());
-//        setContentView(R.layout.activity_camera);
-        setContentView(R.layout.activity_main);
+        Intent intent = getIntent();
+        String mes = intent.getStringExtra("from");
+        if(mes.equals("main")) {
+            setContentView(R.layout.activity_main);
+            camera_ll = findViewById(R.id.camera_ll);
+            tv_epoch = findViewById(R.id.epoch);
+            tv_loss = findViewById(R.id.loss);
+            tv_acc = findViewById(R.id.Acc);
+            tx_epoch = findViewById(R.id.epoch_tx);
+            tx_loss = findViewById(R.id.Loss_tx);
+            tx_acc = findViewById(R.id.Acc_tx);
+
+        }
+        if(mes.equals("fed")) {
+            setContentView(R.layout.activity_fed);
+            camera_ll = findViewById(R.id.camera_ll_2);
+            tv_epoch = findViewById(R.id.epoch_2);
+            tv_loss = findViewById(R.id.loss_2);
+            tv_acc = findViewById(R.id.Acc_2);
+            tx_epoch = findViewById(R.id.epoch_tx_2);
+            tx_loss = findViewById(R.id.Loss_tx_2);
+            tx_acc = findViewById(R.id.Acc_tx_2);
+
+
+        }
+
+        // 文本框
+        tx1 = findViewById(R.id.tx1);
+        tx2 = findViewById(R.id.tx2);
+        tx3 = findViewById(R.id.tx3);
+        class1 = findViewById(R.id.tx_class1);
+        class2 = findViewById(R.id.tx_class2);
+        class3 = findViewById(R.id.tx_class3);
+
+        tv_epoch.setVisibility(View.INVISIBLE);
+        tv_loss.setVisibility(View.INVISIBLE);
+        tv_acc.setVisibility(View.INVISIBLE);
+        tx_epoch.setVisibility(View.INVISIBLE);
+        tx_loss.setVisibility(View.INVISIBLE);
+        tx_acc.setVisibility(View.INVISIBLE);
 
 
         if (!hasPermission()) {
@@ -94,13 +145,14 @@ public class CameraActivity extends AppCompatActivity {
         mTextureView = findViewById(R.id.texture_view);
         textView = findViewById(R.id.result_text);
 
-        // 文本框
-        tx1 = findViewById(R.id.tx1);
-        tx2 = findViewById(R.id.tx2);
-        tx3 = findViewById(R.id.tx3);
-        class1 = findViewById(R.id.tx_class1);
-        class2 = findViewById(R.id.tx_class2);
-        class3 = findViewById(R.id.tx_class3);
+
+        tx1.setVisibility(View.VISIBLE);
+        tx2.setVisibility(View.VISIBLE);
+        tx3.setVisibility(View.VISIBLE);
+        class1.setVisibility(View.VISIBLE);
+        class2.setVisibility(View.VISIBLE);
+        class3.setVisibility(View.VISIBLE);
+
 
     }
 

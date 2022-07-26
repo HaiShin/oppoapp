@@ -6,8 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +19,7 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -36,6 +41,8 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private Button bn_con2;
     private Button down_mod2;
     private Button up_mod2;
+    private Spinner class_sel_spinner2;
+    private RelativeLayout camera_ll;
 
     private NetUtils netUtils;
     private Utils utils = new Utils();
@@ -43,13 +50,14 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private String network_file_name = network_name + ".tflite";
     private GlobalApp globalApp;
     private String DEVICE_NUMBER;
+    private List<String> dataList = new ArrayList<>();
+    private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fed);
         globalApp = ((GlobalApp) getApplicationContext());
-
 
         if (DEVICE_NUMBER == null) {
             DEVICE_NUMBER = globalApp.getDeviceNumber();
@@ -74,16 +82,42 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         mport = findViewById(R.id.port);
         bn_train2 = findViewById(R.id.bn_train_2);
         bn_test2 = findViewById(R.id.bn_test_2);
-        bn_con2 = findViewById(R.id.bn_con_2);
-        bn_tran2 = findViewById(R.id.bn_trans_2);
         add_data2 = findViewById(R.id.add_data_2);
         down_mod2 = findViewById(R.id.model_down_2);
         up_mod2 = findViewById(R.id.model_up_2);
+
+        camera_ll = findViewById(R.id.camera_ll_2);
+        camera_ll.setVisibility(View.INVISIBLE);
+
+        class_sel_spinner2 = findViewById(R.id.select_class_2);
+        dataList.add("A类(10)");
+        dataList.add("B类(10)");
+        dataList.add("C类(10)");
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
+        class_sel_spinner2.setAdapter(adapter);
+        class_sel_spinner2.setSelection(0, true);
+        class_sel_spinner2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                String content = adapterView.getItemAtPosition(i).toString();
+                switch (adapterView.getId()){
+                    case R.id.select_class_2:
+                        Toast.makeText(fed_activity.this,"您选择了"+content,Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+
         request.setOnClickListener(this);
         bn_train2.setOnClickListener(this);
         bn_test2.setOnClickListener(this);
-        bn_con2.setOnClickListener(this);
-        bn_train2.setOnClickListener(this);
+        // bn_con2.setOnClickListener(this);
+        // bn_train2.setOnClickListener(this);
         add_data2.setOnClickListener(this);
         down_mod2.setOnClickListener(this);
         up_mod2.setOnClickListener(this);
@@ -117,7 +151,9 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_test_2:
                 //点击推理按钮
+                String mes = "fed";
                 Intent inferIntent = new Intent(fed_activity.this, CameraActivity.class);
+                inferIntent.putExtra("from", mes);
                 startActivity(inferIntent);
                 break;
             case R.id.add_data_2:
@@ -129,12 +165,14 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
                 break;
-            case R.id.bn_trans_2:
-                //迁移学习
-                break;
-            case R.id.bn_con_2:
-                //持续学习
-                break;
+//            case R.id.bn_trans_2:
+//                //迁移学习
+//                break;
+//            case R.id.bn_con_2:
+//                //持续学习
+//                dataList.add("D类(10)");
+//                adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
+//                break;
             case R.id.model_down_2:
                 //模型下载
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();

@@ -1,16 +1,22 @@
 package com.example.oppoapp;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,17 +26,18 @@ import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+
     private GlobalApp globalApp;
     private NetUtils netUtils;
     private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
     private RelativeLayout camera_ll;
-    private TextView tv_acc;
     private String DEVICE_NUMBER;
     private Utils utils = new Utils();
 
@@ -39,6 +46,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView tv_fed;
     private TextView tv_epoch;
     private TextView tv_loss;
+    private TextView tv_acc;
+
+
     private Button bn_train;
     private Button bn_test;
     private Button add_data;
@@ -47,8 +57,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button down_mod;
     private Button up_mod;
     private Spinner class_sel_spinner;
-    private String data[];
+
     private ArrayAdapter<String> adapter;
+    private List<String> dataList = new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_acc = findViewById(R.id.Acc);
 
 
+
         bn_train = findViewById(R.id.bn_train);
         bn_test = findViewById(R.id.bn_test);
         bn_con = findViewById(R.id.bn_con);
@@ -94,8 +108,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_trans.setSelected(true);
         tv_fed.setSelected(false);
         class_sel_spinner = (Spinner) findViewById(R.id.select_class);
-        data = getResources().getStringArray(R.array.classname);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, data);
+
+        dataList.add("A类(10)");
+        dataList.add("B类(10)");
+        dataList.add("C类(10)");
+        // data = getResources().getStringArray(R.array.classname);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
         class_sel_spinner.setAdapter(adapter);
         class_sel_spinner.setSelection(0, true);
         class_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
@@ -130,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tv_fed:
                 //点击联邦学习，跳转到另一个activity
                 Intent intent = new Intent();
-                intent.setClass(this, fed_activity.class);
+                intent.setClass(MainActivity.this, fed_activity.class);
                 startActivity(intent);
                 break;
             case R.id.bn_train:
@@ -139,24 +157,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_test:
                 //点击推理按钮
-                camera_ll.setVisibility(View.VISIBLE);
+                String mes = "main";
                 Intent inferIntent = new Intent(MainActivity.this, CameraActivity.class);
+                inferIntent.putExtra("from", mes);
                 startActivity(inferIntent);
                 break;
             case R.id.add_data:
                 //添加数据
+                // 这里改成点击调用Camera
                 try {
                     Toast.makeText(this, "开始加载数据", Toast.LENGTH_SHORT).show();
                     getData();
+                    // getNewData();
                 } catch (FileNotFoundException | InterruptedException e) {
                     e.printStackTrace();
                 }
+//                Intent mainIntent = new Intent(MainActivity.this, CameraActivity.class);
+//                startActivity(mainIntent);
                 break;
             case R.id.bn_trans:
                 //迁移学习
                 break;
             case R.id.bn_con:
                 //持续学习
+                dataList.add("D类(10)");
+                adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
                 break;
             case R.id.model_down:
                 //模型下载
@@ -193,7 +218,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
     private void getData() throws FileNotFoundException, InterruptedException {
+        // 这里改成摄像头获取照片
+
         String dataPath = getCacheDir().getAbsolutePath() + "/rps";
         if (!new File(dataPath).exists()){
             new File(dataPath).mkdir();

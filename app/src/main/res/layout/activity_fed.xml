@@ -28,7 +28,7 @@
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
             android:text="@string/tv_trans"
-            android:textColor="@drawable/checked_text"
+            android:textColor="#37474F"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -120,123 +120,147 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/tx1_2"
-        android:layout_width="60dp"
+        android:id="@+id/Acc_tx_2"
+        android:layout_width="wrap_content"
         android:layout_height="30dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class1"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="361dp"
+        android:text="Accuracy："
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide1"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class1_2"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fed_ll1"
+        app:layout_constraintTop_toBottomOf="@+id/Loss_tx_2"
         app:layout_constraintVertical_bias="0.0" />
 
+
     <TextView
-        android:id="@+id/tx_class1_2"
-        android:layout_width="60dp"
+        android:id="@+id/Acc_2"
+        android:layout_width="50dp"
         android:layout_height="30dp"
-        android:layout_marginTop="15dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
         android:textAlignment="center"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fed_ll1"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/Acc_tx_2"
+        app:layout_constraintTop_toBottomOf="@+id/loss_2"
         app:layout_constraintVertical_bias="0.0" />
 
-    <TextView
-        android:id="@+id/tx2_2"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class2"
-        android:textAlignment="center"
-        android:textColor="@color/little_gray"
-        android:textSize="18sp"
+    <RelativeLayout
+        android:id="@+id/camera_ll_2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/guide1"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class2_2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx1_2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/fed_ll1">
 
-    <TextView
-        android:id="@+id/tx_class2_2"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
-        android:textAlignment="center"
-        android:textColor="@color/gray"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx_class1_2" />
+        <com.example.oppoapp.AutoFitTextureView
+            android:id="@+id/texture_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginBottom="0dp" />
 
-    <TextView
-        android:id="@+id/tx3_2"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="10dp"
-        android:text="@string/class3"
-        android:textAlignment="center"
-        android:textColor="@color/little_gray"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/guide1"
-        app:layout_constraintEnd_toStartOf="@+id/tx_class3_2"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx2_2"
-        app:layout_constraintVertical_bias="0.0" />
+        <TextView
+            android:id="@+id/tx_class1"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:text="A类："
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:translationX="-65dp" />
 
-    <TextView
-        android:id="@+id/tx_class3_2"
-        android:layout_width="60dp"
-        android:layout_height="30dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
-        android:textAlignment="center"
-        android:textColor="@color/gray"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tx_class2_2" />
+        <TextView
+            android:id="@+id/tx1"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="15dp"
+            android:textAlignment="center"
+            android:textColor="@color/gray"
+            android:textSize="18sp"
+            android:translationX="5dp" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/tx4"-->
-    <!--        android:layout_width="60dp"-->
-    <!--        android:layout_height="30dp"-->
-    <!--        android:layout_marginTop="5dp"-->
-    <!--        android:layout_marginEnd="10dp"-->
-    <!--        android:text="@string/class4"-->
-    <!--        android:textAlignment="center"-->
-    <!--        android:textColor="@color/little_gray"-->
-    <!--        android:textSize="18sp"-->
-    <!--        app:layout_constraintBottom_toTopOf="@+id/guide1"-->
-    <!--        app:layout_constraintEnd_toStartOf="@+id/tx_class4_2"-->
-    <!--        app:layout_constraintHorizontal_bias="1.0"-->
-    <!--        app:layout_constraintStart_toStartOf="parent"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/tx3_2"-->
-    <!--        app:layout_constraintVertical_bias="0.0" />-->
+        <TextView
+            android:id="@+id/tx_class2"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:text="B类："
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:textAlignment="center"
+            android:textColor="@color/little_gray"
+            android:textSize="18sp"
+            android:translationX="-65dp"
+            android:translationY="45dp" />
 
-    <!--    <TextView-->
-    <!--        android:id="@+id/tx_class4_2"-->
-    <!--        android:layout_width="60dp"-->
-    <!--        android:layout_height="30dp"-->
-    <!--        android:layout_marginTop="5dp"-->
-    <!--        android:layout_marginEnd="15dp"-->
-    <!--        android:textAlignment="center"-->
-    <!--        android:textColor="@color/gray"-->
-    <!--        android:textSize="18sp"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/tx_class3_2" />-->
+        <TextView
+            android:id="@+id/tx2"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="15dp"
+            android:textAlignment="center"
+            android:textColor="@color/gray"
+            android:textSize="18sp"
+            android:translationX="5dp"
+            android:translationY="45dp" />
 
+        <TextView
+            android:id="@+id/tx_class3"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:text="C类："
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="10dp"
+            android:textAlignment="center"
+            android:textColor="@color/little_gray"
+            android:textSize="18sp"
+            android:translationX="-65dp"
+            android:translationY="90dp" />
+
+        <TextView
+            android:id="@+id/tx3"
+            android:layout_width="60dp"
+            android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="15dp"
+            android:textAlignment="center"
+            android:textColor="@color/gray"
+            android:textSize="18sp"
+            android:translationX="5dp"
+            android:translationY="90dp" />
+
+
+
+    </RelativeLayout>
     <Button
         android:id="@+id/bn_train_2"
         android:layout_width="wrap_content"
@@ -293,18 +317,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/fed_ll1"
         app:layout_constraintVertical_bias="0.601" />
+
     <View
+        android:id="@+id/view"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:background="@color/orange_tran"
-        app:layout_constraintTop_toBottomOf="@id/guide1"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guide1" />
+
     <Spinner
         android:id="@+id/select_class_2"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_marginTop="20dp"
-        android:entries="@array/classname"
+        android:layout_marginTop="40dp"
         android:spinnerMode="dropdown"
         android:theme="@style/spinner_style"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -314,11 +340,12 @@
         app:layout_constraintTop_toBottomOf="@+id/guide1"
         app:layout_constraintVertical_bias="0.0"
         tools:ignore="NotSibling" />
+
     <Button
         android:id="@+id/add_data_2"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:background="@drawable/btn_bg_normal_fed"
         android:text="@string/add_data"
         android:textColor="@color/gray_blue"
@@ -331,45 +358,28 @@
         app:layout_constraintTop_toBottomOf="@+id/guide1"
         app:layout_constraintVertical_bias="0.004"
         tools:ignore="NotSibling" />
-    <Button
-        android:id="@+id/bn_trans_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/btn_bg_normal_fed"
-        android:text="@string/tv_trans"
-        android:textColor="@color/gray_blue"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/bn_con_2"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/add_data_2"
-        app:layout_constraintVertical_bias="0.0" />
+
 
     <Button
-        android:id="@+id/bn_con_2"
+        android:id="@+id/model_up_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="60dp"
         android:background="@drawable/btn_bg_normal_fed"
-        android:text="@string/con_learn"
+        android:text="@string/model_up"
         android:textColor="@color/gray_blue"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/bn_trans_2"
-        app:layout_constraintTop_toBottomOf="@+id/add_data_2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintStart_toEndOf="@+id/model_down_2"
+        app:layout_constraintTop_toBottomOf="@+id/add_data_2" />
+
     <Button
         android:id="@+id/model_down_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="60dp"
         android:background="@drawable/btn_bg_normal_fed"
         android:text="@string/model_down"
         android:textColor="@color/gray_blue"
@@ -378,27 +388,23 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/model_up_2"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/bn_trans_2"
+        app:layout_constraintStart_toEndOf="@+id/model_name_2"
+        app:layout_constraintTop_toBottomOf="@+id/add_data_2"
         app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/model_up_2"
+    <Spinner
+        android:id="@+id/model_name_2"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/btn_bg_normal_fed"
-        android:text="@string/model_up"
-        android:textColor="@color/gray_blue"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/model_down_2"
-        app:layout_constraintTop_toBottomOf="@+id/bn_con_2"
-        app:layout_constraintVertical_bias="0.0" />
+        android:layout_height="50dp"
+        android:layout_marginTop="60dp"
+        android:entries="@array/modelselect"
+        android:spinnerMode="dropdown"
 
+        android:theme="@style/spinner_style"
+        app:layout_constraintEnd_toStartOf="@+id/model_down_2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/add_data_2" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

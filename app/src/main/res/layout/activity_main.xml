@@ -52,9 +52,9 @@
         android:id="@+id/camera_ll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@+id/ll1"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/guide2"
-        android:orientation="vertical">
+        app:layout_constraintTop_toBottomOf="@+id/ll1">
 
         <com.example.oppoapp.AutoFitTextureView
             android:id="@+id/texture_view"
@@ -63,7 +63,11 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true" />
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginBottom="0dp" />
 
         <TextView
             android:id="@+id/tx_class1"
@@ -71,6 +75,7 @@
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
+            android:text="A类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:textAlignment="center"
@@ -97,6 +102,7 @@
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
+            android:text="B类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:textAlignment="center"
@@ -123,16 +129,16 @@
             android:id="@+id/tx_class3"
             android:layout_width="60dp"
             android:layout_height="30dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:text="C类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:textAlignment="center"
             android:textColor="@color/little_gray"
             android:textSize="18sp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
             android:translationX="-65dp"
-            android:translationY="90dp"
-            />
+            android:translationY="90dp" />
 
         <TextView
             android:id="@+id/tx3"
@@ -151,10 +157,6 @@
 
 
     </RelativeLayout>
-
-
-
-
 
 
     <TextView
@@ -263,7 +265,6 @@
         app:layout_constraintVertical_bias="0.0" />
 
 
-
     <!--    <TextView-->
     <!--        android:id="@+id/tx1"-->
     <!--        android:layout_width="60dp"-->
@@ -348,7 +349,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/guide2"
         app:layout_constraintEnd_toStartOf="@+id/bn_test"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_bias="0.83"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -372,7 +373,7 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginTop="20dp"
-        android:entries="@array/classname"
+
         android:spinnerMode="dropdown"
         android:theme="@style/spinner_style"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -436,6 +437,21 @@
         app:layout_constraintTop_toBottomOf="@+id/add_data"
         app:layout_constraintVertical_bias="0.0" />
 
+    <Spinner
+        android:id="@+id/model_name"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginTop="40dp"
+        android:entries="@array/modelselect"
+        android:spinnerMode="dropdown"
+        android:theme="@style/spinner_style"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/model_down"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bn_trans"
+        app:layout_constraintVertical_bias="0.0" />
+
     <Button
         android:id="@+id/model_down"
         android:layout_width="wrap_content"
@@ -449,7 +465,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/model_up"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/model_name"
         app:layout_constraintTop_toBottomOf="@+id/bn_trans"
         app:layout_constraintVertical_bias="0.0" />
 
