@@ -360,20 +360,20 @@
         tools:ignore="NotSibling" />
 
 
-    <Button
-        android:id="@+id/model_up_2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:background="@drawable/btn_bg_normal_fed"
-        android:text="@string/model_up"
-        android:textColor="@color/gray_blue"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/model_down_2"
-        app:layout_constraintTop_toBottomOf="@+id/add_data_2" />
+<!--    <Button-->
+<!--        android:id="@+id/model_up_2"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="60dp"-->
+<!--        android:background="@drawable/btn_bg_normal_fed"-->
+<!--        android:text="@string/model_up"-->
+<!--        android:textColor="@color/gray_blue"-->
+<!--        android:textSize="18sp"-->
+<!--        android:textStyle="bold"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="0.5"-->
+<!--        app:layout_constraintStart_toEndOf="@+id/model_down_2"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/add_data_2" />-->
 
     <Button
         android:id="@+id/model_down_2"
@@ -386,7 +386,8 @@
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/model_up_2"
+
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/model_name_2"
         app:layout_constraintTop_toBottomOf="@+id/add_data_2"

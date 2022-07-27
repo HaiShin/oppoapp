@@ -40,7 +40,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private Button bn_tran2;
     private Button bn_con2;
     private Button down_mod2;
-    private Button up_mod2;
+    //private Button up_mod2;
     private Spinner class_sel_spinner2;
     private RelativeLayout camera_ll;
 
@@ -84,7 +84,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         bn_test2 = findViewById(R.id.bn_test_2);
         add_data2 = findViewById(R.id.add_data_2);
         down_mod2 = findViewById(R.id.model_down_2);
-        up_mod2 = findViewById(R.id.model_up_2);
+        //up_mod2 = findViewById(R.id.model_up_2);
 
         camera_ll = findViewById(R.id.camera_ll_2);
         camera_ll.setVisibility(View.INVISIBLE);
@@ -120,7 +120,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         // bn_train2.setOnClickListener(this);
         add_data2.setOnClickListener(this);
         down_mod2.setOnClickListener(this);
-        up_mod2.setOnClickListener(this);
+        //up_mod2.setOnClickListener(this);
 
     }
 
@@ -178,9 +178,9 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
                 doRegisterAndDownload();
                 break;
-            case R.id.model_up_2:
-                //模型上传
-                break;
+//            case R.id.model_up_2:
+//                //模型上传
+//                break;
             default:
                 break;
         }

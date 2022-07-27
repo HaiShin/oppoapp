@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button bn_tran;
     private Button bn_con;
     private Button down_mod;
-    private Button up_mod;
+    //private Button up_mod;
     private Spinner class_sel_spinner;
 
     private ArrayAdapter<String> adapter;
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bn_tran = findViewById(R.id.bn_trans);
         add_data = findViewById(R.id.add_data);
         down_mod = findViewById(R.id.model_down);
-        up_mod = findViewById(R.id.model_up);
+        //up_mod = findViewById(R.id.model_up);
         tv_trans.setSelected(true);
         tv_fed.setSelected(false);
         class_sel_spinner = (Spinner) findViewById(R.id.select_class);
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bn_train.setOnClickListener(this);
         add_data.setOnClickListener(this);
         down_mod.setOnClickListener(this);
-        up_mod.setOnClickListener(this);
+        //up_mod.setOnClickListener(this);
     }
 
     @Override
@@ -188,9 +188,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
                 doRegisterAndDownload();
                 break;
-            case R.id.model_up:
-                //模型上传
-                break;
+//            case R.id.model_up:
+//                //模型上传
+//                break;
             default:
                 break;
 
