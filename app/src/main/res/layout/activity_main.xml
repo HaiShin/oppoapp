@@ -70,21 +70,21 @@
             android:layout_marginBottom="0dp" />
 
         <TextView
-            android:id="@+id/tx_class1"
+            android:id="@+id/tx_class1_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:text="A类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
+            android:text="A类："
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="18sp"
             android:translationX="-65dp" />
 
         <TextView
-            android:id="@+id/tx1"
+            android:id="@+id/tx1_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
@@ -92,19 +92,19 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="15dp"
             android:textAlignment="center"
-            android:textColor="@color/gray"
+            android:textColor="@color/black"
             android:textSize="18sp"
             android:translationX="5dp" />
 
         <TextView
-            android:id="@+id/tx_class2"
+            android:id="@+id/tx_class2_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:text="B类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
+            android:text="B类："
             android:textAlignment="center"
             android:textColor="@color/little_gray"
             android:textSize="18sp"
@@ -112,7 +112,7 @@
             android:translationY="45dp" />
 
         <TextView
-            android:id="@+id/tx2"
+            android:id="@+id/tx2_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
@@ -126,14 +126,14 @@
             android:translationY="45dp" />
 
         <TextView
-            android:id="@+id/tx_class3"
+            android:id="@+id/tx_class3_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
-            android:text="C类："
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
+            android:text="C类："
             android:textAlignment="center"
             android:textColor="@color/little_gray"
             android:textSize="18sp"
@@ -141,7 +141,7 @@
             android:translationY="90dp" />
 
         <TextView
-            android:id="@+id/tx3"
+            android:id="@+id/tx3_1"
             android:layout_width="60dp"
             android:layout_height="30dp"
             android:layout_alignParentTop="true"

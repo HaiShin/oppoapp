@@ -27,7 +27,7 @@ import java.util.Map;
 /** A wrapper for TFLite model with multiple signature runner. */
 public class LiteMultipleSignatureModel implements Closeable {
 
-  private static final int BOTTLENECK_SIZE = 7 * 7 * 1280;
+  private static final int BOTTLENECK_SIZE = 54 * 54 * 16;
   private static final int EXPECTED_BATCH_SIZE = 20;
 
   private final Interpreter interpreter;

@@ -5,12 +5,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,14 +31,24 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.scrat.app.selectorlibrary.ImageSelector;
+
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -63,6 +82,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
+    private String className;
+
+    private static final int REQUEST_CODE_SELECT_IMG = 1;
+    private static final int MAX_SELECT_COUNT = 30;
+
+    private static final int NUM_THREADS =
+            Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+
+    private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+
+
+    private final Lock trainingInferenceLock = new ReentrantLock();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,9 +114,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         netUtils = new NetUtils(DEVICE_NUMBER);
 
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
-        System.out.println(modelFilePath);
-        loadModel(modelFilePath);
+//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+//        System.out.println(modelFilePath);
+//        loadModel(modelFilePath);
+
+
+        ActivityManager am = (ActivityManager) MainActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
+        int heapGrowthLimit = am.getMemoryClass();
+
+        System.out.println("内存："+heapGrowthLimit);
 
         camera_ll = findViewById(R.id.camera_ll);
         camera_ll.setVisibility(View.INVISIBLE);
@@ -109,24 +147,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_fed.setSelected(false);
         class_sel_spinner = (Spinner) findViewById(R.id.select_class);
 
-        dataList.add("A类(10)");
-        dataList.add("B类(10)");
-        dataList.add("C类(10)");
-        // data = getResources().getStringArray(R.array.classname);
+        dataList.add("A");
+        dataList.add("B");
+        dataList.add("C");
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
         class_sel_spinner.setAdapter(adapter);
-        class_sel_spinner.setSelection(0, true);
         class_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String content = adapterView.getItemAtPosition(i).toString();
-                switch (adapterView.getId()){
-                    case R.id.select_class:
-                        Toast.makeText(MainActivity.this,"您选择了"+content,Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        break;
-                }
+                className = (String) class_sel_spinner.getSelectedItem();
+
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
@@ -163,17 +193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(inferIntent);
                 break;
             case R.id.add_data:
-                //添加数据
-                // 这里改成点击调用Camera
-                try {
-                    Toast.makeText(this, "开始加载数据", Toast.LENGTH_SHORT).show();
-                    getData();
-                    // getNewData();
-                } catch (FileNotFoundException | InterruptedException e) {
-                    e.printStackTrace();
-                }
-//                Intent mainIntent = new Intent(MainActivity.this, CameraActivity.class);
-//                startActivity(mainIntent);
+                selectImg(view);
                 break;
             case R.id.bn_trans:
                 //迁移学习
@@ -186,7 +206,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.model_down:
                 //模型下载
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
-                doRegisterAndDownload();
+                doRegister();
+                doDownload();
                 break;
             case R.id.model_up:
                 //模型上传
@@ -219,38 +240,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    private void getData() throws FileNotFoundException, InterruptedException {
-        // 这里改成摄像头获取照片
 
-        String dataPath = getCacheDir().getAbsolutePath() + "/rps";
-        if (!new File(dataPath).exists()){
-            new File(dataPath).mkdir();
-        }
-        String downDataUrl = "http://112.124.109.236/rps_64.zip";
+    public void doRegister() {
+        AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
-            if (!new File(dataPath + "/rps_64").exists()) {
-                netUtils.getData(dataPath, downDataUrl);
-            }
             try {
-                globalApp.getTlModel().addBatchSample(dataPath + "/rps_64");
-            } catch (FileNotFoundException e) {
+                flag.set(netUtils.doRegister());
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
         thread.start();
-        thread.join();
-        Toast.makeText(this,"数据加载完成",Toast.LENGTH_SHORT).show();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (flag.get()) {
+            Toast.makeText(this, "设备连接成功", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "设备连接失败", Toast.LENGTH_SHORT).show();
+        }
     }
 
-    public void doRegisterAndDownload() {
+    public void doDownload() {
         String cacheDir = getCacheDir().getAbsolutePath();
         AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
-            try {
-                flag.set(netUtils.doRegisterAndDownload(cacheDir));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            flag.set(netUtils.download(cacheDir));
         });
         thread.start();
         try {
@@ -264,43 +281,138 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
         }
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
         loadModel(modelFilePath);
         Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
 
-    private void loadModel(String modelFilePath){
+    private void loadModel(String modelFilePath) {
         if (!globalApp.isNull()){
             Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             return;
         }
         if (new File(modelFilePath).exists()) {
-
             String parentDir = getCacheDir().getAbsolutePath();
-            List<String> list = Arrays.asList("paper","rock","scissors");
+            String directoryName = "model/download/" + network_name;
+            List<String> list = Arrays.asList("A","B","C");
             try {
-                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir, list));
+                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir,directoryName, list));
                 Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                throw new RuntimeException("加载模型报错！",e);
+                throw new RuntimeException("加载模型报错！", e);
             }
         } else {
-            Toast.makeText(this,"模型文件不存在，请点击模型下载按钮",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "模型文件不存在，请点击模型下载按钮", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void train(){
+        DecimalFormat b = new DecimalFormat("0.00");
         globalApp.getTlModel().setEpochs(20);
         globalApp.getTlModel().enableTraining((epoch, loss) -> {
                     System.out.println("epoch: "+epoch + " ----- loss:" + loss);
 
-                    tv_epoch.setText(epoch + "");
-                    tv_loss.setText(loss + "");
+                    tv_epoch.setText(b.format(epoch));
+                    tv_loss.setText(b.format(loss));
                     }, (acc) -> {
             System.out.println( "test------" + acc);
-            tv_acc.setText(acc + "");
+            tv_acc.setText(b.format(acc));
         });
     }
 
+    private Future<Void> loadImg(Intent data) throws IOException, InterruptedException {
+
+        return executor.submit(
+                () -> {
+                    Message msg = new Message();
+                    if (Thread.interrupted()) {
+                        msg.what = 2;
+                        msg.obj = "加载图片出错。";
+                        handler.sendMessage(msg);
+                        return null;
+                    }
+                    String label = className;
+                    trainingInferenceLock.lockInterruptibly();
+                    try {
+                        List<String> paths = ImageSelector.getImagePaths(data);
+                        Bitmap bitmap = null;
+                        for (String path : paths) {
+                            Uri uri = Uri.parse(path);
+                            String img_path = getPathFromURI(MainActivity.this, uri);
+                            FileInputStream fis = new FileInputStream(img_path);
+                            bitmap = BitmapFactory.decodeStream(fis);
+                            float[][][] rgbImage = utils.prepareCameraImage(bitmap, 0);
+                            System.out.println(rgbImage.length);
+                            System.out.println(rgbImage[0].length);
+                            System.out.println(rgbImage[0][0].length);
+                            globalApp.getTlModel().addBatchSample(label, rgbImage);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        trainingInferenceLock.unlock();
+                    }
+                    msg.what = 2;
+                    msg.obj = "加载此批 "+label+" 数据完成！";
+                    handler.sendMessage(msg);
+                    return null;
+                });
+
+    }
+
+    public void selectImg(View v) {
+        ImageSelector.show(this, REQUEST_CODE_SELECT_IMG, MAX_SELECT_COUNT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_SELECT_IMG) {
+            Thread thread = new Thread(() -> {
+                try {
+                    loadImg(data);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+            thread.start();
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // 根据相册的Uri获取图片的路径
+    public static String getPathFromURI(Context context, Uri uri) {
+        String result;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (cursor == null) {
+            result = uri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
+    }
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == 1) {
+                String res = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
+            } else if (msg.what == 2) {
+                String res = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
 }

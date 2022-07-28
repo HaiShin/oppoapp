@@ -35,6 +35,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.tensorflow.lite.examples.transfer.api.TransferLearningModel;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -97,6 +98,14 @@ public class CameraActivity extends AppCompatActivity {
             tx_epoch = findViewById(R.id.epoch_tx);
             tx_loss = findViewById(R.id.Loss_tx);
             tx_acc = findViewById(R.id.Acc_tx);
+            // 文本框
+            tx1 = findViewById(R.id.tx1_1);
+            tx2 = findViewById(R.id.tx2_1);
+            tx3 = findViewById(R.id.tx3_1);
+            class1 = findViewById(R.id.tx_class1_1);
+            class2 = findViewById(R.id.tx_class2_1);
+            class3 = findViewById(R.id.tx_class3_1);
+
 
         }
         if(mes.equals("fed")) {
@@ -108,17 +117,18 @@ public class CameraActivity extends AppCompatActivity {
             tx_epoch = findViewById(R.id.epoch_tx_2);
             tx_loss = findViewById(R.id.Loss_tx_2);
             tx_acc = findViewById(R.id.Acc_tx_2);
+            // 文本框
+            tx1 = findViewById(R.id.tx1);
+            tx2 = findViewById(R.id.tx2);
+            tx3 = findViewById(R.id.tx3);
+            class1 = findViewById(R.id.tx_class1);
+            class2 = findViewById(R.id.tx_class2);
+            class3 = findViewById(R.id.tx_class3);
 
 
         }
 
-        // 文本框
-        tx1 = findViewById(R.id.tx1);
-        tx2 = findViewById(R.id.tx2);
-        tx3 = findViewById(R.id.tx3);
-        class1 = findViewById(R.id.tx_class1);
-        class2 = findViewById(R.id.tx_class2);
-        class3 = findViewById(R.id.tx_class3);
+
 
         tv_epoch.setVisibility(View.INVISIBLE);
         tv_loss.setVisibility(View.INVISIBLE);
@@ -184,23 +194,24 @@ public class CameraActivity extends AppCompatActivity {
         float[][][] imges = imageUtils.prepareCameraImage(bitmap,0);
         try {
             // 预测图像
+            DecimalFormat b = new DecimalFormat("0.00");
             long start = System.currentTimeMillis();
             TransferLearningModel.Prediction[] predictions = tlModel.predict(imges);
             class1.setText(predictions[0].getClassName());
-            tx1.setText(predictions[0].getConfidence() + "");
+            tx1.setText(b.format(predictions[0].getConfidence()));
             class2.setText(predictions[1].getClassName());
-            tx2.setText(predictions[1].getConfidence() + "");
+            tx2.setText(b.format(predictions[1].getConfidence()));
             class3.setText(predictions[2].getClassName());
-            tx3.setText(predictions[2].getConfidence() + "");
-//            long end = System.currentTimeMillis();
-//            StringBuffer show_text = new StringBuffer("预测结果标签：");
-//            for (TransferLearningModel.Prediction prediction : predictions) {
-//                show_text.append("\n类别：").append(prediction.getClassName())
-//                        .append("\n概率：").append(prediction.getConfidence());
-//            }
-//            System.out.println(show_text.toString());
-//            show_text.append("\n时间：").append(end - start).append("ms");
-//            textView.setText(show_text);
+            tx3.setText(b.format(predictions[2].getConfidence()));
+            long end = System.currentTimeMillis();
+            StringBuffer show_text = new StringBuffer("预测结果标签：");
+            for (TransferLearningModel.Prediction prediction : predictions) {
+                show_text.append("\n类别：").append(prediction.getClassName())
+                        .append("\n概率：").append(prediction.getConfidence());
+            }
+            System.out.println(show_text.toString());
+            show_text.append("\n时间：").append(end - start).append("ms");
+            textView.setText(show_text);
         } catch (Exception e) {
             e.printStackTrace();
         }
