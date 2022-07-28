@@ -147,9 +147,8 @@ public final class TransferLearningModel implements Closeable {
    * @param image image RGB data.
    * @param className ground truth label for image.
    */
-  public Future<Void> addSample(float[][][] image, String className) {
+  public Future<Void> addSample(float[][][] image, String className) throws InterruptedException {
     checkNotTerminating();
-
     if (!classes.containsKey(className)) {
       throw new IllegalArgumentException(String.format(
           "Class \"%s\" is not one of the classes recognized by the model", className));
@@ -206,9 +205,6 @@ public final class TransferLearningModel implements Closeable {
               int numBatchesProcessed = 0;
 
               for (List<TrainingSample> batch : trainingBatches(trainBatchSize)) {
-//                if (Thread.interrupted()) {
-//                  break epochLoop;
-//                }
 
                 for (int sampleIdx = 0; sampleIdx < batch.size(); sampleIdx++) {
                   TrainingSample sample = batch.get(sampleIdx);
@@ -284,7 +280,7 @@ public final class TransferLearningModel implements Closeable {
    */
   public Prediction[] predict(float[][][] image) {
     checkNotTerminating();
-    trainingInferenceLock.lock();
+//    trainingInferenceLock.lock();
 
     try {
       if (isTerminating) {
@@ -307,7 +303,7 @@ public final class TransferLearningModel implements Closeable {
       Arrays.sort(predictions, (a, b) -> -Float.compare(a.confidence, b.confidence));
       return predictions;
     } finally {
-      trainingInferenceLock.unlock();
+//      trainingInferenceLock.unlock();
     }
   }
 

@@ -2,43 +2,58 @@ package com.example.oppoapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.os.Handler;
+import android.os.Message;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.scrat.app.selectorlibrary.ImageSelector;
 
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class fed_activity extends AppCompatActivity implements View.OnClickListener {
     private TextView tv_trans2;
     private TextView tv_fed2;
     private TextView tv_epoch;
     private TextView tv_loss;
-    private EditText mip;
-    private EditText mport;
+    private TextView tv_acc;
     private Button request;
     private Button bn_train2;
     private Button bn_test2;
     private Button add_data2;
-    private Button bn_tran2;
-    private Button bn_con2;
     private Button down_mod2;
     //private Button up_mod2;
     private Spinner class_sel_spinner2;
@@ -53,6 +68,18 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private List<String> dataList = new ArrayList<>();
     private ArrayAdapter<String> adapter;
 
+    private String className;
+
+    private static final int REQUEST_CODE_SELECT_IMG = 1;
+    private static final int MAX_SELECT_COUNT = 30;
+
+    private static final int NUM_THREADS =
+            Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
+
+    private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+
+
+    private final Lock trainingInferenceLock = new ReentrantLock();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,9 +91,9 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         }
         netUtils = new NetUtils(DEVICE_NUMBER);
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
-        System.out.println(modelFilePath);
-        loadModel(modelFilePath);
+//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
+//        System.out.println(modelFilePath);
+//        loadModel(modelFilePath);
 
         tv_trans2 = (TextView) findViewById(R.id.tv_trans2);
         tv_fed2 = (TextView) findViewById(R.id.tv_fed2);
@@ -74,12 +101,11 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
 
         tv_epoch = findViewById(R.id.epoch_2);
         tv_loss = findViewById(R.id.loss_2);
+        tv_acc = findViewById(R.id.Acc_2);
         tv_trans2.setSelected(false);
         tv_fed2.setSelected(true);
         tv_trans2.setOnClickListener(this);
         request = findViewById(R.id.request);
-        mip = findViewById(R.id.ip);
-        mport = findViewById(R.id.port);
         bn_train2 = findViewById(R.id.bn_train_2);
         bn_test2 = findViewById(R.id.bn_test_2);
         add_data2 = findViewById(R.id.add_data_2);
@@ -90,23 +116,15 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         camera_ll.setVisibility(View.INVISIBLE);
 
         class_sel_spinner2 = findViewById(R.id.select_class_2);
-        dataList.add("A类(10)");
-        dataList.add("B类(10)");
-        dataList.add("C类(10)");
+        dataList.add("A");
+        dataList.add("B");
+        dataList.add("C");
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
         class_sel_spinner2.setAdapter(adapter);
-        class_sel_spinner2.setSelection(0, true);
         class_sel_spinner2.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String content = adapterView.getItemAtPosition(i).toString();
-                switch (adapterView.getId()){
-                    case R.id.select_class_2:
-                        Toast.makeText(fed_activity.this,"您选择了"+content,Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        break;
-                }
+                className = (String) class_sel_spinner2.getSelectedItem();
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
@@ -116,8 +134,6 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         request.setOnClickListener(this);
         bn_train2.setOnClickListener(this);
         bn_test2.setOnClickListener(this);
-        // bn_con2.setOnClickListener(this);
-        // bn_train2.setOnClickListener(this);
         add_data2.setOnClickListener(this);
         down_mod2.setOnClickListener(this);
         //up_mod2.setOnClickListener(this);
@@ -133,17 +149,8 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
                 break;
             case R.id.request:
-                CreateRequestDialog rdialog = new CreateRequestDialog(fed_activity.this,"连接");
-                rdialog.setOnDialogClickListener(new CreateRequestDialog.OnDialogClickListener() {
-                    @Override
-                    public void onSureCLickListener(EditText mip,EditText mport) {
-
-                        System.out.println("mip:"+mip.getText());
-                        System.out.println("mport:"+mport.getText());
-                    }
-
-                });
-                rdialog.show();
+                Toast.makeText(this, "正在连接中", Toast.LENGTH_SHORT).show();
+                doRegister();
                 break;
             case R.id.bn_train_2:
                 //点击训练按钮,在这添加后续操作
@@ -157,26 +164,13 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 startActivity(inferIntent);
                 break;
             case R.id.add_data_2:
-                //添加数据
-                try {
-                    Toast.makeText(this, "开始加载数据", Toast.LENGTH_SHORT).show();
-                    getData();
-                } catch (FileNotFoundException | InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                添加数据
+                selectImg(view);
                 break;
-//            case R.id.bn_trans_2:
-//                //迁移学习
-//                break;
-//            case R.id.bn_con_2:
-//                //持续学习
-//                dataList.add("D类(10)");
-//                adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
-//                break;
             case R.id.model_down_2:
                 //模型下载
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
-                doRegisterAndDownload();
+                doDownload();
                 break;
 //            case R.id.model_up_2:
 //                //模型上传
@@ -186,15 +180,33 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void doRegisterAndDownload() {
-        String cacheDir = getCacheDir().getAbsolutePath();
+    public void doRegister() {
         AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
             try {
-                flag.set(netUtils.doRegisterAndDownload(cacheDir));
+                flag.set(netUtils.doRegister());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (flag.get()) {
+            Toast.makeText(this, "设备连接成功", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "设备连接失败", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void doDownload() {
+        String cacheDir = getCacheDir().getAbsolutePath();
+        AtomicBoolean flag = new AtomicBoolean(false);
+        Thread thread = new Thread(() -> {
+            flag.set(netUtils.download(cacheDir));
         });
         thread.start();
         try {
@@ -208,7 +220,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
         }
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_file_name;
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
         loadModel(modelFilePath);
         Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
@@ -220,9 +232,10 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         }
         if (new File(modelFilePath).exists()) {
             String parentDir = getCacheDir().getAbsolutePath();
-            List<String> list = Arrays.asList("paper", "rock", "scissors");
+            String directoryName = "model/download/" + network_name;
+            List<String> list = Arrays.asList("A","B","C");
             try {
-                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir, list));
+                globalApp.setTlModel(new TransferLearningModelWrapper(parentDir,directoryName, list));
                 Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 throw new RuntimeException("加载模型报错！", e);
@@ -230,28 +243,6 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         } else {
             Toast.makeText(this, "模型文件不存在，请点击模型下载按钮", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void getData() throws FileNotFoundException, InterruptedException {
-        String dataPath = getCacheDir().getAbsolutePath() + "/rps";
-        if (!new File(dataPath).exists()) {
-            new File(dataPath).mkdirs();
-        }
-
-        String downDataUrl = "http://112.124.109.236/rps_64.zip";
-        Thread thread = new Thread(() -> {
-            if (!new File(dataPath + "/rps_64").exists()) {
-                netUtils.getData(dataPath, downDataUrl);
-            }
-            try {
-                globalApp.getTlModel().addBatchSample(dataPath + "/rps_64");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
-        thread.start();
-        thread.join();
-        Toast.makeText(this, "数据加载完成", Toast.LENGTH_SHORT).show();
     }
 
     //联邦学习推理
@@ -262,44 +253,133 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             file.mkdir();
         }
         new Thread(() -> {
-            netUtils.doConnect();
-
-            for (int i = 0; i < 50; i++) {
+            DecimalFormat b = new DecimalFormat("0.00");
+            for (int i = 0; i < 20; i++) {
                 CountDownLatch countDownLatch = new CountDownLatch(1);
                 System.out.println(i);
                 String ckptFilePath = ckptDirPath + "/checkpoint_" + i + ".ckpt";
 
                 int finalI = i;
                 globalApp.getTlModel().fedTraining((epoch, loss) -> {
-                    System.out.println("epoch: " + finalI + " ----- loss:" + loss);
+
+                    System.out.println("epoch: " + finalI + " ----- loss:" + b.format(loss));
 
                     tv_epoch.setText(finalI + "");
-                    tv_loss.setText(loss + "");
+                    tv_loss.setText(b.format(loss));
                 }, (acc) -> {
                     System.out.println("acc------" + acc);
-//            tv_acc.setText(acc + "");
+                    tv_acc.setText(b.format(acc));
                 });
                 // 保存参数
                 globalApp.getTlModel().saveModel(ckptFilePath);
-//                Toast.makeText(this, "第"+i+"epoch参数文件正在上传中......", Toast.LENGTH_SHORT).show();
-                // 子线程上传和下载参数文件
-                netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                if (!new File(ckptFilePath).exists()) {
-//                    Toast.makeText(this, "ckpt文件不存在", Toast.LENGTH_SHORT).show();
-                    System.out.println("ckpt文件不存在");
-                    return;
-                }
-                globalApp.getTlModel().restoreModel(ckptFilePath);
-//                Toast.makeText(this, "第"+i+"epoch参数文件更新中", Toast.LENGTH_SHORT).show();
+//                // 子线程上传和下载参数文件
+//                netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
+//                try {
+//                    countDownLatch.await();
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                if (!new File(ckptFilePath).exists()) {
+//                    System.out.println("ckpt文件不存在");
+//                    return;
+//                }
+//                globalApp.getTlModel().restoreModel(ckptFilePath);
 
             }
         }).start();
 
     }
+
+    private Future<Void> loadImg(Intent data) throws IOException, InterruptedException {
+
+        return executor.submit(
+                () -> {
+                    Message msg = new Message();
+                    if (Thread.interrupted()) {
+                        msg.what = 2;
+                        msg.obj = "加载图片出错。";
+                        handler.sendMessage(msg);
+                        return null;
+                    }
+                    String label = className;
+                    trainingInferenceLock.lockInterruptibly();
+                    try {
+                        List<String> paths = ImageSelector.getImagePaths(data);
+                        Bitmap bitmap = null;
+                        for (String path : paths) {
+                            Uri uri = Uri.parse(path);
+                            String img_path = getPathFromURI(fed_activity.this, uri);
+                            FileInputStream fis = new FileInputStream(img_path);
+                            bitmap = BitmapFactory.decodeStream(fis);
+                            float[][][] rgbImage = utils.prepareCameraImage(bitmap, 0);
+                            System.out.println(rgbImage.length);
+                            System.out.println(rgbImage[0].length);
+                            System.out.println(rgbImage[0][0].length);
+                            globalApp.getTlModel().addBatchSample(label, rgbImage);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        trainingInferenceLock.unlock();
+                    }
+                    msg.what = 2;
+                    msg.obj = "加载此批 "+label+" 数据完成！";
+                    handler.sendMessage(msg);
+                    return null;
+                });
+
+    }
+
+    public void selectImg(View v) {
+        ImageSelector.show(this, REQUEST_CODE_SELECT_IMG, MAX_SELECT_COUNT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_SELECT_IMG) {
+            try {
+                loadImg(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    // 根据相册的Uri获取图片的路径
+    public static String getPathFromURI(Context context, Uri uri) {
+        String result;
+        Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+        if (cursor == null) {
+            result = uri.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
+    }
+
+    @SuppressLint("HandlerLeak")
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (msg.what == 1) {
+                String res = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
+            } else if (msg.what == 2) {
+                String res = (String) msg.obj;
+                Toast.makeText(getApplicationContext(), res, Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
+
+
 }

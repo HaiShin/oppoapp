@@ -57,34 +57,21 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
   private volatile AccConsumer accConsumer;
   private Utils imageUtils = new Utils();
 
-  TransferLearningModelWrapper(String parentDir, List<String> list) {
+  TransferLearningModelWrapper(String parentDir,String directoryName, List<String> list) {
 //    Arrays.asList("1", "2", "3", "4")
     model =
         new TransferLearningModel(
-            new ModelLoader(parentDir, "model/download"), list);
+
+            new ModelLoader(parentDir, directoryName), list);
   }
 
   // This method is thread-safe.
-  public Future<Void> addSample(float[][][] image, String className) {
+  public Future<Void> addSample(float[][][] image, String className) throws InterruptedException {
     return model.addSample(image, className);
   }
 
-  public void addBatchSample(String dirPath) throws FileNotFoundException {
-
-    File dir = new File(dirPath);
-    File[] listOfFiles = dir.listFiles();
-    for (File childDir : listOfFiles) {
-      if (childDir.isDirectory()) {
-        String className = childDir.getName();
-        File[] imageFiles = childDir.listFiles();
-        for (File imageFile : imageFiles) {
-          FileInputStream fis = new FileInputStream(imageFile);
-          Bitmap bitmap = BitmapFactory.decodeStream(fis);
-          float[][][] rgbImage = imageUtils.prepareCameraImage(bitmap, 0);
-          model.addSample(rgbImage, className);
-        }
-      }
-    }
+  public void addBatchSample(String className, float[][][] img) throws FileNotFoundException, InterruptedException {
+    model.addSample(img, className);
   }
 
   // This method is thread-safe, but blocking.

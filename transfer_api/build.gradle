@@ -41,11 +41,9 @@ dependencies {
 
     // This dependency is compileOnly so that the user of this library can select between
     // different TFLite distributions (e.g. with or without Flex).
-    //compileOnly 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
+    compileOnly 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
 
-//    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
-//    // This dependency adds the necessary TF op support.
-//    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly-SNAPSHOT'
-    implementation 'org.tensorflow:tensorflow-lite:+'
-
+    implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly-SNAPSHOT'
+    // This dependency adds the necessary TF op support.
+    implementation 'org.tensorflow:tensorflow-lite-select-tf-ops:0.0.0-nightly-SNAPSHOT'
 }

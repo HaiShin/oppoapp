@@ -15,9 +15,9 @@
 <!--    <string name="class4">类别4:</string>-->
     <string name="request">请求连接</string>
     <array name="classname">
-        <item>A类(10)</item>
-        <item>B类(10)</item>
-        <item>C类(10)</item>
+        <item>A类</item>
+        <item>B类</item>
+        <item>C类</item>
 <!--        <item>类别4</item>-->
     </array>
     <array name="modelselect">

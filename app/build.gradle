@@ -39,4 +39,6 @@ dependencies {
 
     //    OKhttp
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+
+    implementation 'com.github.open-android:ImageSelector:0.1.0'
 }
