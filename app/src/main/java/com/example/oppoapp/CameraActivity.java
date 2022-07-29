@@ -195,7 +195,7 @@ public class CameraActivity extends AppCompatActivity {
         try {
             // 预测图像
             DecimalFormat b = new DecimalFormat("0.00");
-            long start = System.currentTimeMillis();
+
             TransferLearningModel.Prediction[] predictions = tlModel.predict(imges);
             class1.setText(predictions[0].getClassName());
             tx1.setText(b.format(predictions[0].getConfidence()));
@@ -203,15 +203,6 @@ public class CameraActivity extends AppCompatActivity {
             tx2.setText(b.format(predictions[1].getConfidence()));
             class3.setText(predictions[2].getClassName());
             tx3.setText(b.format(predictions[2].getConfidence()));
-            long end = System.currentTimeMillis();
-            StringBuffer show_text = new StringBuffer("预测结果标签：");
-            for (TransferLearningModel.Prediction prediction : predictions) {
-                show_text.append("\n类别：").append(prediction.getClassName())
-                        .append("\n概率：").append(prediction.getConfidence());
-            }
-            System.out.println(show_text.toString());
-            show_text.append("\n时间：").append(end - start).append("ms");
-            textView.setText(show_text);
         } catch (Exception e) {
             e.printStackTrace();
         }

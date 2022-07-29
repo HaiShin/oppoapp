@@ -273,20 +273,25 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 // 保存参数
                 globalApp.getTlModel().saveModel(ckptFilePath);
 //                // 子线程上传和下载参数文件
-//                netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
-//                try {
-//                    countDownLatch.await();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                if (!new File(ckptFilePath).exists()) {
-//                    System.out.println("ckpt文件不存在");
-//                    return;
-//                }
-//                globalApp.getTlModel().restoreModel(ckptFilePath);
+                netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                if (!new File(ckptFilePath).exists()) {
+                    System.out.println("ckpt文件不存在");
+                    return;
+                }
+                globalApp.getTlModel().restoreModel(ckptFilePath);
 
             }
+            Message msg = new Message();
+            msg.what = 2;
+            msg.obj = "联邦学习训练完成！";
+            handler.sendMessage(msg);
+
         }).start();
 
     }
@@ -304,8 +309,9 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                     }
                     String label = className;
                     trainingInferenceLock.lockInterruptibly();
+                    List<String> paths = new ArrayList<>();
                     try {
-                        List<String> paths = ImageSelector.getImagePaths(data);
+                        paths = ImageSelector.getImagePaths(data);
                         Bitmap bitmap = null;
                         for (String path : paths) {
                             Uri uri = Uri.parse(path);
@@ -324,9 +330,11 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                     } finally {
                         trainingInferenceLock.unlock();
                     }
-                    msg.what = 2;
-                    msg.obj = "加载此批 "+label+" 数据完成！";
-                    handler.sendMessage(msg);
+                    if (paths.size() != 0) {
+                        msg.what = 2;
+                        msg.obj = "加载此批 "+label+" 数据完成！";
+                        handler.sendMessage(msg);
+                    }
                     return null;
                 });
 

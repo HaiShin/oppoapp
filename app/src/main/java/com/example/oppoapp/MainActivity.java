@@ -114,9 +114,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         netUtils = new NetUtils(DEVICE_NUMBER);
 
 
-//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
-//        System.out.println(modelFilePath);
-//        loadModel(modelFilePath);
+        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+        System.out.println(modelFilePath);
+        loadModel(modelFilePath);
 
 
         ActivityManager am = (ActivityManager) MainActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
@@ -200,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_con:
                 //持续学习
-                dataList.add("D类(10)");
+                dataList.add("D");
                 adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, dataList);
                 break;
             case R.id.model_down:
@@ -209,9 +209,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 doRegister();
                 doDownload();
                 break;
-//            case R.id.model_up:
-//                //模型上传
-//                break;
+            case R.id.model_up:
+                //模型上传
+                Toast.makeText(this, "模型上传功能尚未开放", Toast.LENGTH_SHORT).show();
+                break;
             default:
                 break;
 
@@ -307,17 +308,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void train(){
-        DecimalFormat b = new DecimalFormat("0.00");
-        globalApp.getTlModel().setEpochs(20);
-        globalApp.getTlModel().enableTraining((epoch, loss) -> {
-                    System.out.println("epoch: "+epoch + " ----- loss:" + loss);
+        new Thread(() -> {
+            DecimalFormat b = new DecimalFormat("0.00");
+            globalApp.getTlModel().setEpochs(20);
 
-                    tv_epoch.setText(b.format(epoch));
-                    tv_loss.setText(b.format(loss));
-                    }, (acc) -> {
-            System.out.println( "test------" + acc);
-            tv_acc.setText(b.format(acc));
-        });
+            globalApp.getTlModel().enableTraining((epoch, loss) -> {
+                System.out.println("epoch: " + epoch + " ----- loss:" + loss);
+
+                tv_epoch.setText(epoch + "");
+                tv_loss.setText(b.format(loss));
+            }, (acc) -> {
+                System.out.println("test------" + acc);
+                tv_acc.setText(b.format(acc));
+            });
+
+            Message msg = new Message();
+            msg.what = 2;
+            msg.obj = "迁移学习训练完成！";
+            handler.sendMessage(msg);
+        }).start();
+
     }
 
     private Future<Void> loadImg(Intent data) throws IOException, InterruptedException {
@@ -333,8 +343,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                     String label = className;
                     trainingInferenceLock.lockInterruptibly();
+                    List<String> paths = new ArrayList<>();
                     try {
-                        List<String> paths = ImageSelector.getImagePaths(data);
+                        paths = ImageSelector.getImagePaths(data);
                         Bitmap bitmap = null;
                         for (String path : paths) {
                             Uri uri = Uri.parse(path);
@@ -347,15 +358,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             System.out.println(rgbImage[0][0].length);
                             globalApp.getTlModel().addBatchSample(label, rgbImage);
                         }
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
                         trainingInferenceLock.unlock();
                     }
-                    msg.what = 2;
-                    msg.obj = "加载此批 "+label+" 数据完成！";
-                    handler.sendMessage(msg);
+                    if (paths.size() != 0) {
+                        msg.what = 2;
+                        msg.obj = "加载此批 "+label+" 数据完成！";
+                        handler.sendMessage(msg);
+                    }
                     return null;
                 });
 
