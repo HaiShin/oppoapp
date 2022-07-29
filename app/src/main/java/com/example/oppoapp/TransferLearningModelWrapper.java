@@ -92,7 +92,7 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
   public void enableTraining(LossConsumer lossConsumer,AccConsumer accConsumer) {
     this.lossConsumer = lossConsumer;
     this.accConsumer = accConsumer;
-    new Thread(() -> {
+
       try {
         model.train(epochs, lossConsumer, accConsumer).get();
       } catch (ExecutionException e) {
@@ -100,7 +100,7 @@ public class TransferLearningModelWrapper implements Closeable, Serializable {
       } catch (InterruptedException e) {
         // no-op
       }
-    }).start();
+
   }
 
   public void fedTraining(LossConsumer lossConsumer, AccConsumer accConsumer) {
