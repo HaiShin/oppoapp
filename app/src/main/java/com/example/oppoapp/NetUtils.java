@@ -2,6 +2,7 @@ package com.example.oppoapp;
 
 import android.os.Message;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,6 +16,8 @@ import java.io.OutputStream;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -31,14 +34,11 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 public class NetUtils {
-    private String network_name = "MobileNetV2";
-    private String network_file_name = network_name+".tflite";
-    private String network_version = "v1.0";
+
     private String URL = "http://47.100.0.251:30000";
     private String REGISTER_URL = URL + "/device";
     private String CONNECT_URL = URL + "/connection";
     private String DOWNLOAD_URL = URL + "/network";
-    private String UPLOAD_URL = URL + "/network";
     private String DEVICE_NUMBER;
     private String DEVICE_NAME = "giao";
     private String APPLICATION = "xxxx";
@@ -46,6 +46,8 @@ public class NetUtils {
     private String token;
     private String APPLICATION_ID = "65aec123-0752-4a3d-9e99-2877ee9e11bb";
     private String model_id = "f788f533-1c8e-2d2e-8863-49c7e1d74ebf";
+    private String network_name = "MobileNetV2";
+    private String network_file_name = network_name+".tflite";
 
     private static int BUFFER = 1024;
 
@@ -102,6 +104,60 @@ public class NetUtils {
             e.printStackTrace();
             return false;
         }
+    }
+
+
+    public boolean getNetworks(Map<String, String> networkMap) {
+        if (token == null) {
+            System.out.println("token为空，需要先连接服务器。"); //消息发送的内容如：  Object String 类 int
+            return false;
+        }
+        String url = DOWNLOAD_URL;
+
+        OkHttpClient okHttpClient = new OkHttpClient()
+                .newBuilder()
+                .followRedirects(true)
+                .connectTimeout(60000, TimeUnit.SECONDS)
+                .readTimeout(60000, TimeUnit.SECONDS)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Authorization", token)
+                .build();
+        try {
+            Response response= okHttpClient.newCall(request)
+                    .execute();
+
+            if(response.isSuccessful()){
+                //打印服务端返回结果
+                String result = response.body().string();
+                JSONObject jsonObject = new JSONObject(result);
+                int code = jsonObject.getInt("code");
+                if (code == 1) {
+                    System.out.println("获取网络列表成功");
+                    JSONArray data = jsonObject.getJSONArray("data");
+                    for(int i=0; i< data.length(); i++) {
+                        String t = data.getString(i);
+                        JSONObject network = new JSONObject(t);
+                        String network_id = network.getString("identity");
+                        String network_name = network.getString("name");
+                        networkMap.put(network_name, network_id);
+                        System.out.println(network_id+"--"+network_name);
+                    }
+                } else {
+                    System.out.println("获取网络列表失败");
+                    return false;
+                }
+            } else {
+                System.out.println( "获取网络列表失败");
+                return false;
+            }
+
+        }catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+        return true;
     }
 
     public boolean doRegisterAndDownload(String cachePath) throws JSONException{

@@ -42,7 +42,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -54,8 +56,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private GlobalApp globalApp;
     private NetUtils netUtils;
+
+    private Map<String, String> networks = new HashMap();
     private String network_name = "MobileNetV2";
     private String network_file_name = network_name+".tflite";
+
     private RelativeLayout camera_ll;
     private String DEVICE_NUMBER;
     private Utils utils = new Utils();
@@ -105,6 +110,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         setContentView(R.layout.activity_main);
+
+
         globalApp = ((GlobalApp) getApplicationContext());
         if ( DEVICE_NUMBER == null ) {
             DEVICE_NUMBER = utils.randomString(10);
@@ -113,10 +120,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         System.out.println("main:"+DEVICE_NUMBER);
         netUtils = new NetUtils(DEVICE_NUMBER);
 
+        doRegister();
+        doGetNetworks();
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
-        System.out.println(modelFilePath);
-        loadModel(modelFilePath);
+//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+//        System.out.println(modelFilePath);
+//        loadModel(modelFilePath);
 
 
         ActivityManager am = (ActivityManager) MainActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
@@ -206,18 +215,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.model_down:
                 //模型下载
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
-                doRegister();
+
                 doDownload();
-                break;
-            case R.id.model_up:
-                //模型上传
-                Toast.makeText(this, "模型上传功能尚未开放", Toast.LENGTH_SHORT).show();
                 break;
             default:
                 break;
 
         }
     }
+
+
 
 
     // check had permission
@@ -263,6 +270,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "设备连接失败", Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void doGetNetworks() {
+        AtomicBoolean flag = new AtomicBoolean(false);
+        Thread thread = new Thread(() -> {
+            flag.set(netUtils.getNetworks(networks));
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (flag.get()) {
+            for (Map.Entry<String, String> entry : networks.entrySet()) {
+                System.out.println("network_name:" + entry.getKey() + " network_id:" +entry.getValue());
+            }
+            Toast.makeText(this, "网络列表加载成功", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "获取网络列表出错", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
     public void doDownload() {
         String cacheDir = getCacheDir().getAbsolutePath();

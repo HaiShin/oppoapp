@@ -58,7 +58,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     //private Button up_mod2;
     private Spinner class_sel_spinner2;
     private RelativeLayout camera_ll;
-
+    private Boolean issel;
     private NetUtils netUtils;
     private Utils utils = new Utils();
     private String network_name = "MobileNetV2";
@@ -77,9 +77,8 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
 
     private final ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-
-
     private final Lock trainingInferenceLock = new ReentrantLock();
+    private boolean isTrain = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -154,7 +153,15 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.bn_train_2:
                 //点击训练按钮,在这添加后续操作
-                fedTrain();
+                String content = bn_train2.getText().toString();
+                if (content.equals("训练")) {
+
+                    bn_train2.setText("取消训练");
+                    fedTrain();
+                } else {
+                    isTrain = false;
+                    bn_train2.setText("训练");
+                }
                 break;
             case R.id.bn_test_2:
                 //点击推理按钮
@@ -172,9 +179,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "开始下载模型", Toast.LENGTH_SHORT).show();
                 doDownload();
                 break;
-//            case R.id.model_up_2:
-//                //模型上传
-//                break;
+
             default:
                 break;
         }
@@ -255,37 +260,41 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         new Thread(() -> {
             DecimalFormat b = new DecimalFormat("0.00");
             for (int i = 0; i < 20; i++) {
-                CountDownLatch countDownLatch = new CountDownLatch(1);
-                System.out.println(i);
-                String ckptFilePath = ckptDirPath + "/checkpoint_" + i + ".ckpt";
+                if (isTrain) {
+                    CountDownLatch countDownLatch = new CountDownLatch(1);
+                    System.out.println(i);
+                    String ckptFilePath = ckptDirPath + "/checkpoint_" + i + ".ckpt";
 
-                int finalI = i;
-                globalApp.getTlModel().fedTraining((epoch, loss) -> {
+                    int finalI = i;
+                    globalApp.getTlModel().fedTraining((epoch, loss) -> {
 
-                    System.out.println("epoch: " + finalI + " ----- loss:" + b.format(loss));
+                        System.out.println("epoch: " + finalI + " ----- loss:" + b.format(loss));
 
-                    tv_epoch.setText(finalI + "");
-                    tv_loss.setText(b.format(loss));
-                }, (acc) -> {
-                    System.out.println("acc------" + acc);
-                    tv_acc.setText(b.format(acc));
-                });
-                // 保存参数
-                globalApp.getTlModel().saveModel(ckptFilePath);
+                        tv_epoch.setText(finalI + "");
+                        tv_loss.setText(b.format(loss));
+                    }, (acc) -> {
+                        System.out.println("acc------" + acc);
+                        tv_acc.setText(b.format(acc));
+                    });
+                    // 保存参数
+                    globalApp.getTlModel().saveModel(ckptFilePath);
 //                // 子线程上传和下载参数文件
-                netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
-                try {
-                    countDownLatch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                    netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
+                    try {
+                        countDownLatch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
-                if (!new File(ckptFilePath).exists()) {
-                    System.out.println("ckpt文件不存在");
-                    return;
+                    if (!new File(ckptFilePath).exists()) {
+                        System.out.println("ckpt文件不存在");
+                        return;
+                    }
+                    globalApp.getTlModel().restoreModel(ckptFilePath);
+                } else {
+                    isTrain = true;
+                    break;
                 }
-                globalApp.getTlModel().restoreModel(ckptFilePath);
-
             }
             Message msg = new Message();
             msg.what = 2;
