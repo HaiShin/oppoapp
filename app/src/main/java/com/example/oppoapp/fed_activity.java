@@ -35,7 +35,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,11 +61,18 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private Spinner class_sel_spinner2;
     private Spinner model_sel_spinner;
     private RelativeLayout camera_ll;
-    private Boolean issel;
+
     private NetUtils netUtils;
+
+    private Map<String, String> networks = new HashMap();
     private Utils utils = new Utils();
-    private String network_name = "MobileNetV2";
-    private String network_file_name = network_name + ".tflite";
+    private String network_name;
+    private String network_file_name;
+    private String model_id;
+    private String modelFilePath;
+    private int sample_num;
+
+
     private GlobalApp globalApp;
     private String DEVICE_NUMBER;
     private List<String> dataList = new ArrayList<>();
@@ -72,7 +81,6 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private List<String> networkList = new ArrayList<>();
 
     private String className;
-    private String modelname;
 
     private static final int REQUEST_CODE_SELECT_IMG = 1;
     private static final int MAX_SELECT_COUNT = 30;
@@ -133,26 +141,13 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
-        modeladapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, networkList);
-        model_sel_spinner.setAdapter(modeladapter);
-        model_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                modelname = (String) model_sel_spinner.getSelectedItem();
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
 
         request.setOnClickListener(this);
         bn_train2.setOnClickListener(this);
         bn_test2.setOnClickListener(this);
         add_data2.setOnClickListener(this);
         down_mod2.setOnClickListener(this);
-        //up_mod2.setOnClickListener(this);
 
     }
 
@@ -167,6 +162,23 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             case R.id.request:
                 Toast.makeText(this, "正在连接中", Toast.LENGTH_SHORT).show();
                 doRegister();
+                doGetNetworks();
+                modeladapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, networkList);
+                model_sel_spinner.setAdapter(modeladapter);
+                model_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        network_name = (String) model_sel_spinner.getSelectedItem();
+                        network_file_name = network_name + ".tflite";
+                        model_id = networks.get(network_name);
+                        modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
                 break;
             case R.id.bn_train_2:
                 //点击训练按钮,在这添加后续操作
@@ -224,11 +236,37 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    private void doGetNetworks() {
+        AtomicBoolean flag = new AtomicBoolean(false);
+        Thread thread = new Thread(() -> {
+            flag.set(netUtils.getNetworks(networks));
+        });
+        thread.start();
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (flag.get()) {
+            for (Map.Entry<String, String> entry : networks.entrySet()) {
+                System.out.println("network_name:" + entry.getKey() + " network_id:" +entry.getValue());
+            }
+            Toast.makeText(this, "网络列表加载成功", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "获取网络列表出错", Toast.LENGTH_SHORT).show();
+        }
+        for (Map.Entry<String, String> entry : networks.entrySet()) {
+            networkList.add(entry.getKey());
+        }
+    }
+
     public void doDownload() {
         String cacheDir = getCacheDir().getAbsolutePath();
         AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
-            flag.set(netUtils.download(cacheDir));
+            flag.set(netUtils.download(cacheDir, network_name, model_id));
         });
         thread.start();
         try {
@@ -242,7 +280,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
         }
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+
         loadModel(modelFilePath);
         Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
@@ -296,7 +334,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                     // 保存参数
                     globalApp.getTlModel().saveModel(ckptFilePath);
 //                // 子线程上传和下载参数文件
-                    netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch);
+                    netUtils.doUpAndDownLoadParam(ckptFilePath, countDownLatch, model_id, sample_num);
                     try {
                         countDownLatch.await();
                     } catch (InterruptedException e) {
@@ -345,10 +383,8 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                             FileInputStream fis = new FileInputStream(img_path);
                             bitmap = BitmapFactory.decodeStream(fis);
                             float[][][] rgbImage = utils.prepareCameraImage(bitmap, 0);
-                            System.out.println(rgbImage.length);
-                            System.out.println(rgbImage[0].length);
-                            System.out.println(rgbImage[0][0].length);
                             globalApp.getTlModel().addBatchSample(label, rgbImage);
+                            sample_num++;
                         }
 
                     } catch (Exception e) {
@@ -358,7 +394,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
                     }
                     if (paths.size() != 0) {
                         msg.what = 2;
-                        msg.obj = "加载此批 "+label+" 数据完成！";
+                        msg.obj = "加载 "+label+" 数据完成！"+ "共加载了" + sample_num + "张";
                         handler.sendMessage(msg);
                     }
                     return null;

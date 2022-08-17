@@ -21,8 +21,6 @@
 <!--        <item>类别4</item>-->
     </array>
     <array name="modelselect">
-        <item>mobilenet</item>
-        <item>model2</item>
-        <item>model3</item>
+        <item>model</item>
     </array>
 </resources>

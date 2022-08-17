@@ -45,9 +45,10 @@ public class NetUtils {
     private String AGGREGATE_URL = URL + "/network";
     private String token;
     private String APPLICATION_ID = "65aec123-0752-4a3d-9e99-2877ee9e11bb";
-    private String model_id = "f788f533-1c8e-2d2e-8863-49c7e1d74ebf";
-    private String network_name = "MobileNetV2";
-    private String network_file_name = network_name+".tflite";
+
+//    private String model_id = "f788f533-1c8e-2d2e-8863-49c7e1d74ebf";
+//    private String network_name = "MobileNetV2";
+//    private String network_file_name = network_name+".tflite";
 
     private static int BUFFER = 1024;
 
@@ -160,60 +161,10 @@ public class NetUtils {
         return true;
     }
 
-    public boolean doRegisterAndDownload(String cachePath) throws JSONException{
 
-        JSONObject param = new JSONObject();
-        param.put("device_number", DEVICE_NUMBER);
-        param.put("device_name", DEVICE_NAME);
-        param.put("application", APPLICATION);
-        MediaType JSON = MediaType.parse("application/json;charset=utf-8");
-        String params =  param.toString();
-
-        RequestBody requestBody = RequestBody.create(JSON, params);
-
-        OkHttpClient okHttpClient = new OkHttpClient()
-                .newBuilder()
-                .connectTimeout(60000, TimeUnit.SECONDS)
-                .readTimeout(60000, TimeUnit.SECONDS)
-                .build();
-
-        Request request = new Request.Builder()
-                .post(requestBody)
-                .url(REGISTER_URL)
-                .build();
-        Call call = okHttpClient.newCall(request);
-
-        try {
-            ResponseBody responseBody = call.execute().body();
-            //判断请求是否成功
-            if(responseBody != null){
-                InputStream inputStream = responseBody.byteStream();
-                String dirPath = cachePath + "/model/download/";
-
-                if (!new File(dirPath).exists()) {
-                    new File(dirPath).mkdirs();
-                }
-                String filePath = dirPath + network_file_name;
-                boolean result = WriteFile4InputStream(filePath, inputStream);
-                if (result) {
-                    System.out.println("模型下载成功");
-                }else {
-                    System.out.println("模型下载失败");
-                    return false;
-                }
-            } else {
-                System.out.println( "设备注册失败，请检查网络设置。"); //消息发送的内容如：  Object String 类 int
-                return false;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-
-    public void doUpAndDownLoadParam(String filePath, CountDownLatch countDownLatch ) {
+    public void doUpAndDownLoadParam(String filePath, CountDownLatch countDownLatch, String model_id, int sample_num) {
         String url = AGGREGATE_URL + "/" + model_id + "/weight";
-        upLoadingFile(filePath, url);
+        upLoadingFile(filePath, url, sample_num);
         countDownLatch.countDown();
     }
 
@@ -310,13 +261,14 @@ public class NetUtils {
         return result;
     }
 
-    public boolean download(String cachePath) {
+    public boolean download(String cachePath, String network_name, String model_id) {
         if (token == null) {
             System.out.println("token为空，需要先连接服务器。"); //消息发送的内容如：  Object String 类 int
             return false;
         }
 
         String url = DOWNLOAD_URL + "/" + model_id;
+        String network_file_name = network_name + ".tflite";
 
         OkHttpClient okHttpClient = new OkHttpClient()
                 .newBuilder()
@@ -362,7 +314,7 @@ public class NetUtils {
     /**
      * 上传ckpt文件
      */
-    public void upLoadingFile(String filePath,String url)  {
+    public void upLoadingFile(String filePath,String url, int sample_num)  {
 
         // 1.RequestBody
         //创建MultipartBody.Builder，用于添加请求的数据
@@ -374,14 +326,20 @@ public class NetUtils {
             return;
         }
 
+
         // 根据文件的后缀名，获得文件类型
         String fileType = getMimeType(file.getName());
+
+        multipartBodyBuilder.addFormDataPart(
+                "sample_num",  //请求的名字
+                String.valueOf(sample_num)); //创建RequestBody，把上传的文件放入
         //给Builder添加上传的文件
         multipartBodyBuilder.addFormDataPart(
                 "network_weight",  //请求的名字
                 file.getName(), //文件的文字，服务器端用来解析的
                 RequestBody.create(MediaType.parse(fileType), file) //创建RequestBody，把上传的文件放入
         );
+
 
 
         // 添加其他参数信息, 如果只是单纯的上传文件, 下面的添加其他参数的方法不用调用

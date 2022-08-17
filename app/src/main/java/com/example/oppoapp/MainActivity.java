@@ -58,8 +58,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private NetUtils netUtils;
 
     private Map<String, String> networks = new HashMap();
-    private String network_name = "MobileNetV2";
-    private String network_file_name = network_name+".tflite";
+    private String network_name;
+    private String network_file_name;
+    private String modelFilePath;
+    private String model_id;
 
     private RelativeLayout camera_ll;
     private String DEVICE_NUMBER;
@@ -91,7 +93,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private String className;
-    private String modelname;
 
     private static final int REQUEST_CODE_SELECT_IMG = 1;
     private static final int MAX_SELECT_COUNT = 30;
@@ -127,16 +128,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         doRegister();
         doGetNetworks();
 
-//        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
-//        System.out.println(modelFilePath);
-//        loadModel(modelFilePath);
-
-
-        ActivityManager am = (ActivityManager) MainActivity.this.getSystemService(Context.ACTIVITY_SERVICE);
-        int heapGrowthLimit = am.getMemoryClass();
-
-        System.out.println("内存："+heapGrowthLimit);
-
         camera_ll = findViewById(R.id.camera_ll);
         camera_ll.setVisibility(View.INVISIBLE);
 
@@ -159,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_trans.setSelected(true);
         tv_fed.setSelected(false);
         class_sel_spinner = (Spinner) findViewById(R.id.select_class);
-        model_sel_spinner = findViewById(R.id.model_name);
+        model_sel_spinner = (Spinner) findViewById(R.id.model_name);
 
         dataList.add("A");
         dataList.add("B");
@@ -176,12 +167,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
+
+        for (Map.Entry<String, String> entry : networks.entrySet()) {
+            networkList.add(entry.getKey());
+        }
+
         modeladapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, networkList);
         model_sel_spinner.setAdapter(modeladapter);
         model_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                modelname = (String) model_sel_spinner.getSelectedItem();
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                network_name = (String) model_sel_spinner.getSelectedItem();
+                network_file_name = network_name+".tflite";
+                modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
+                model_id = networks.get(network_name);
+                System.out.println("===============" + modelFilePath);
             }
 
             @Override
@@ -318,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String cacheDir = getCacheDir().getAbsolutePath();
         AtomicBoolean flag = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
-            flag.set(netUtils.download(cacheDir));
+            flag.set(netUtils.download(cacheDir, network_name, model_id));
         });
         thread.start();
         try {
@@ -332,7 +332,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "模型下载失败", Toast.LENGTH_SHORT).show();
         }
 
-        String modelFilePath = getCacheDir().getAbsolutePath() + "/model/download/" + network_name+"/"+network_file_name;
         loadModel(modelFilePath);
         Toast.makeText(this, "模型加载完成", Toast.LENGTH_SHORT).show();
     }
