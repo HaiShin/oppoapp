@@ -333,6 +333,7 @@
         android:layout_marginTop="40dp"
         android:spinnerMode="dropdown"
         android:theme="@style/spinner_style"
+        android:entries="@array/classname"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/add_data_2"
         app:layout_constraintHorizontal_bias="0.5"

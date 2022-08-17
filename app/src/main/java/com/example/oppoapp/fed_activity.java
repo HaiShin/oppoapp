@@ -57,6 +57,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private Button down_mod2;
     //private Button up_mod2;
     private Spinner class_sel_spinner2;
+    private Spinner model_sel_spinner;
     private RelativeLayout camera_ll;
     private Boolean issel;
     private NetUtils netUtils;
@@ -67,8 +68,11 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
     private String DEVICE_NUMBER;
     private List<String> dataList = new ArrayList<>();
     private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> modeladapter;
+    private List<String> networkList = new ArrayList<>();
 
     private String className;
+    private String modelname;
 
     private static final int REQUEST_CODE_SELECT_IMG = 1;
     private static final int MAX_SELECT_COUNT = 30;
@@ -113,7 +117,7 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
 
         camera_ll = findViewById(R.id.camera_ll_2);
         camera_ll.setVisibility(View.INVISIBLE);
-
+        model_sel_spinner = findViewById(R.id.model_name_2);
         class_sel_spinner2 = findViewById(R.id.select_class_2);
         dataList.add("A");
         dataList.add("B");
@@ -127,6 +131,19 @@ public class fed_activity extends AppCompatActivity implements View.OnClickListe
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        modeladapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, networkList);
+        model_sel_spinner.setAdapter(modeladapter);
+        model_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                modelname = (String) model_sel_spinner.getSelectedItem();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
             }
         });
 

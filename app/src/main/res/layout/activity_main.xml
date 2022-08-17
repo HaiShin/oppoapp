@@ -373,7 +373,7 @@
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:layout_marginTop="20dp"
-
+        android:entries="@array/classname"
         android:spinnerMode="dropdown"
         android:theme="@style/spinner_style"
         app:layout_constraintBottom_toBottomOf="parent"

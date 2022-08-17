@@ -81,13 +81,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button down_mod;
     //private Button up_mod;
     private Spinner class_sel_spinner;
+    private Spinner model_sel_spinner;
 
     private ArrayAdapter<String> adapter;
+    private ArrayAdapter<String> modeladapter;
     private List<String> dataList = new ArrayList<>();
+    private List<String> networkList = new ArrayList<>();
 
 
 
     private String className;
+    private String modelname;
 
     private static final int REQUEST_CODE_SELECT_IMG = 1;
     private static final int MAX_SELECT_COUNT = 30;
@@ -155,6 +159,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tv_trans.setSelected(true);
         tv_fed.setSelected(false);
         class_sel_spinner = (Spinner) findViewById(R.id.select_class);
+        model_sel_spinner = findViewById(R.id.model_name);
 
         dataList.add("A");
         dataList.add("B");
@@ -171,6 +176,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onNothingSelected(AdapterView<?> adapterView) {
             }
         });
+        modeladapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, networkList);
+        model_sel_spinner.setAdapter(modeladapter);
+        model_sel_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                modelname = (String) model_sel_spinner.getSelectedItem();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
         tv_fed.setOnClickListener(this);
         bn_train.setOnClickListener(this);
         bn_test.setOnClickListener(this);
